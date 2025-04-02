@@ -1,0 +1,17 @@
+[project]
+name = "bioasq-rag"
+version = "0.1.0"
+requires-python = ">=3.11"
+description = "RAG system for BioASQ"
+dependencies = [
+]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+pythonpath = ["."]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3.5",
+    "pytest-asyncio>=0.26.0",
+]
