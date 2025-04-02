@@ -5,6 +5,7 @@ requires-python = ">=3.11"
 description = "RAG system for BioASQ"
 dependencies = [
     "biopython>=1.85",
+    "python-dotenv>=1.0.0",
 ]
 
 [tool.pytest.ini_options]

@@ -2,7 +2,10 @@
 import argparse
 import asyncio
 import logging
+import os
 import sys
+
+from dotenv import load_dotenv
 
 from src.data_pipelines.clients.biopython_pubmed_client import BioPythonPubMedClient
 from src.data_pipelines.data_fetcher import DataFetcher
@@ -26,6 +29,9 @@ def setup_logging(log_level: str = "INFO") -> None:
 
 async def main():
     """Run the DataFetcher to collect PubMed abstracts."""
+    # Load environment variables from .env file
+    load_dotenv()
+
     parser = argparse.ArgumentParser(description="Fetch PubMed abstracts")
     parser.add_argument(
         "--email", required=True, help="Email address for NCBI API (required)"
@@ -63,9 +69,12 @@ async def main():
     setup_logging(args.log_level)
     logger = logging.getLogger(__name__)
 
+    # Use the API key from .env file if not provided via command line
+    api_key = args.api_key or os.environ.get("NCBI_API_KEY")
+
     logger.info("Initializing PubMed abstract fetcher")
     logger.info(f"Using email: {args.email}")
-    logger.info(f"API key provided: {bool(args.api_key)}")
+    logger.info(f"API key provided: {bool(api_key)}")
     logger.info(f"Data directory: {args.data_dir}")
     logger.info(f"Batch size: {args.batch_size}")
     logger.info(f"Rate limit: {args.rate_limit} requests per minute")
@@ -73,7 +82,7 @@ async def main():
     try:
         # Create the client
         pubmed_client = BioPythonPubMedClient(
-            email=args.email, api_key=args.api_key, tool="bioasq-rag"
+            email=args.email, api_key=api_key, tool="bioasq-rag"
         )
 
         # Create and run the fetcher
