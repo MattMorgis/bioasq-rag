@@ -67,6 +67,9 @@ class DataFetcher:
         # URL collector for getting PubMed URLs
         self.url_collector = PubMedURLCollector(data_dir=data_dir)
 
+        # Track failed URLs
+        self.failed_urls: Set[str] = set()
+
     def _extract_pubmed_id(self, url: str) -> str:
         """
         Extract the PubMed ID from a PubMed URL.
@@ -146,10 +149,14 @@ class DataFetcher:
                         self.logger.error(
                             f"Rate limit exceeded for {url} after {self.max_retries} attempts."
                         )
+                        # Add to failed URLs
+                        self.failed_urls.add(url)
                         return None
                 except PubMedClientError as e:
                     # Other client errors - generally not worth retrying
                     self.logger.error(f"Error fetching abstract for {url}: {str(e)}")
+                    # Add to failed URLs
+                    self.failed_urls.add(url)
                     return None
                 except Exception as e:
                     # Unexpected errors
@@ -161,8 +168,12 @@ class DataFetcher:
                         self.logger.warning(f"Retrying in {wait_time} seconds...")
                         await asyncio.sleep(wait_time)
                     else:
+                        # Add to failed URLs
+                        self.failed_urls.add(url)
                         return None
 
+            # Add to failed URLs if all retries fail
+            self.failed_urls.add(url)
             return None
 
     async def fetch_all_abstracts(self, urls: Set[str]) -> List[Dict[str, Any]]:
@@ -231,12 +242,24 @@ class DataFetcher:
         abstracts = await self.fetch_all_abstracts(urls)
         successful_fetches = len(abstracts)
 
+        # Save failed URLs to file
+        if self.failed_urls:
+            failed_urls_path = self.data_dir / "failed_urls.json"
+            with open(failed_urls_path, "w", encoding="utf-8") as f:
+                json.dump(list(self.failed_urls), f, indent=2)
+            self.logger.info(
+                f"Saved {len(self.failed_urls)} failed URLs to {failed_urls_path}"
+            )
+
         # Summary
         summary = {
             "total_urls": total_urls,
             "successful_fetches": successful_fetches,
             "failed_fetches": total_urls - successful_fetches,
             "abstracts_dir": str(self.abstracts_dir),
+            "failed_urls_file": str(self.data_dir / "failed_urls.json")
+            if self.failed_urls
+            else None,
         }
 
         # Save summary to file
@@ -250,5 +273,7 @@ class DataFetcher:
         print(f"Successfully fetched: {successful_fetches}")
         print(f"Failed: {total_urls - successful_fetches}")
         print(f"Abstracts saved to: {self.abstracts_dir}")
+        if self.failed_urls:
+            print(f"Failed URLs saved to: {self.data_dir / 'failed_urls.json'}")
 
         return summary
