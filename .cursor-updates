@@ -5,3 +5,4 @@
 - Added a run_fetcher.py script to demonstrate how to use the DataFetcher
 - Moved PubMed client files into a separate clients subdirectory to improve organization
 - Created PubMedURLCollector to extract and deduplicate all PubMed URLs from BioASQ datasets
+- Enhanced DataFetcher to use PubMedURLCollector for parallel batch downloading of 50,000+ abstracts with rate limiting and retry logic
