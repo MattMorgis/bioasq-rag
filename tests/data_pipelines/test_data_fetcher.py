@@ -65,9 +65,9 @@ def data_fetcher(mock_pubmed_client, tmp_path):
             mock_pubmed_client,
             data_dir=str(tmp_path),
             batch_size=2,  # Small batch size for testing
-            rate_limit_per_min=60,  # High rate limit to speed up tests
+            rate_limit_per_sec=10,  # High rate limit to speed up tests
             max_retries=2,
-            concurrent_batches=2,  # Testing with 2 concurrent batches
+            concurrent_requests=2,  # Testing with 2 concurrent requests
         )
 
         return fetcher
@@ -91,12 +91,11 @@ async def test_fetch_single_abstract_success(
 
     # Call the method
     url = "http://www.ncbi.nlm.nih.gov/pubmed/15858239"
-    batch_id = 1  # Use batch_id 1 for testing
 
     # Patch open to avoid file operations
     with patch("builtins.open", mock_open()) as mock_file:
         with patch("json.dump") as mock_json_dump:
-            result = await data_fetcher.fetch_single_abstract(url, batch_id)
+            result = await data_fetcher.fetch_single_abstract(url)
 
     # Verify the result
     assert result is not None
@@ -119,8 +118,6 @@ async def test_fetch_single_abstract_already_exists(
     data_fetcher, mock_pubmed_client, mock_pubmed_abstract
 ):
     """Test fetching an abstract that already exists."""
-    batch_id = 1  # Use batch_id 1 for testing
-
     # Configure Path.exists to return True
     with patch.object(Path, "exists", return_value=True):
         # Mock open to return the abstract
@@ -129,7 +126,7 @@ async def test_fetch_single_abstract_already_exists(
         ):
             with patch("json.load", return_value=mock_pubmed_abstract):
                 result = await data_fetcher.fetch_single_abstract(
-                    "http://www.ncbi.nlm.nih.gov/pubmed/15858239", batch_id
+                    "http://www.ncbi.nlm.nih.gov/pubmed/15858239"
                 )
 
     # Verify the result is from the file
@@ -151,13 +148,12 @@ async def test_fetch_single_abstract_rate_limit(data_fetcher, mock_pubmed_client
 
     # Call the method
     url = "http://www.ncbi.nlm.nih.gov/pubmed/15858239"
-    batch_id = 1  # Use batch_id 1 for testing
 
     # Patch sleep to avoid waiting in tests
     with patch("asyncio.sleep", return_value=None) as mock_sleep:
         with patch("builtins.open", mock_open()) as mock_file:
             with patch("json.dump"):
-                result = await data_fetcher.fetch_single_abstract(url, batch_id)
+                result = await data_fetcher.fetch_single_abstract(url)
 
     # Verify the result is successful after retry
     assert result is not None
@@ -178,9 +174,8 @@ async def test_fetch_single_abstract_error(data_fetcher, mock_pubmed_client):
 
     # Call the method
     url = "http://www.ncbi.nlm.nih.gov/pubmed/15858239"
-    batch_id = 1  # Use batch_id 1 for testing
 
-    result = await data_fetcher.fetch_single_abstract(url, batch_id)
+    result = await data_fetcher.fetch_single_abstract(url)
 
     # Verify None result due to error
     assert result is None
@@ -192,8 +187,7 @@ async def test_fetch_single_abstract_error(data_fetcher, mock_pubmed_client):
 @pytest.mark.asyncio
 async def test_fetch_batch(data_fetcher, mock_pubmed_client, mock_pubmed_abstract):
     """Test fetching a batch of abstracts."""
-    # This test is no longer needed as we've replaced fetch_batch with process_batch
-    # and added a test_process_batch test
+    # This test is no longer needed as we've removed batch processing with process_batch
     pass
 
 
@@ -201,7 +195,7 @@ async def test_fetch_batch(data_fetcher, mock_pubmed_client, mock_pubmed_abstrac
 async def test_fetch_all_abstracts(
     data_fetcher, mock_pubmed_client, mock_pubmed_abstract
 ):
-    """Test fetching all abstracts using concurrent batches."""
+    """Test fetching all abstracts concurrently."""
     # Setup abstracts with different IDs
     abstract1 = mock_pubmed_abstract
     abstract2 = {**mock_pubmed_abstract, "id": "12345678"}
@@ -226,17 +220,14 @@ async def test_fetch_all_abstracts(
         "http://www.ncbi.nlm.nih.gov/pubmed/87654321",
     }
 
-    # Mock the process_batch method to control testing of fetch_all_abstracts
+    # Mock the fetch_single_abstract method to control testing of fetch_all_abstracts
     with patch.object(
-        data_fetcher, "process_batch", new_callable=AsyncMock
-    ) as mock_process_batch:
-        # Configure mock to return abstracts based on batch
-        mock_process_batch.side_effect = lambda batch_id, batch_urls: [
-            side_effect(data_fetcher._extract_pubmed_id(url))
-            for url in batch_urls
-            if data_fetcher._extract_pubmed_id(url)
-            in ["15858239", "12345678", "87654321"]
-        ]
+        data_fetcher, "fetch_single_abstract", new_callable=AsyncMock
+    ) as mock_fetch_single:
+        # Configure mock to return abstracts based on URL
+        mock_fetch_single.side_effect = lambda url: side_effect(
+            data_fetcher._extract_pubmed_id(url)
+        )
 
         # Mock sleep to avoid waiting
         with patch("asyncio.sleep") as mock_sleep:
@@ -249,8 +240,8 @@ async def test_fetch_all_abstracts(
     assert "12345678" in ids
     assert "87654321" in ids
 
-    # Verify process_batch was called
-    assert mock_process_batch.call_count > 0
+    # Verify fetch_single_abstract was called for each URL
+    assert mock_fetch_single.call_count == 3
 
 
 @pytest.mark.asyncio
@@ -323,32 +314,5 @@ async def test_run_no_urls(data_fetcher):
 
 @pytest.mark.asyncio
 async def test_process_batch(data_fetcher, mock_pubmed_client, mock_pubmed_abstract):
-    """Test processing a batch of abstracts sequentially."""
-    # Setup abstracts with different IDs
-    abstract1 = mock_pubmed_abstract
-    abstract2 = {**mock_pubmed_abstract, "id": "12345678"}
-
-    # Configure mock to return different abstracts
-    mock_pubmed_client.get_abstract_by_id.side_effect = [abstract1, abstract2]
-
-    # Batch of URLs
-    urls = [
-        "http://www.ncbi.nlm.nih.gov/pubmed/15858239",
-        "http://www.ncbi.nlm.nih.gov/pubmed/12345678",
-    ]
-    batch_id = 1  # Use batch_id 1 for testing
-
-    # Mock file operations
-    with patch("builtins.open", mock_open()) as mock_file:
-        with patch("json.dump") as mock_json_dump:
-            results = await data_fetcher.process_batch(batch_id, urls)
-
-    # Verify results
-    assert len(results) == 2
-    assert results[0]["id"] == "15858239"
-    assert results[1]["id"] == "12345678"
-
-    # Verify client calls
-    assert mock_pubmed_client.get_abstract_by_id.call_count == 2
-    mock_pubmed_client.get_abstract_by_id.assert_any_call("15858239")
-    mock_pubmed_client.get_abstract_by_id.assert_any_call("12345678")
+    """Test removed process_batch method - this test is no longer needed."""
+    pass

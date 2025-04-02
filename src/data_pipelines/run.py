@@ -47,7 +47,7 @@ async def main():
         "--rate-limit",
         type=int,
         default=10,
-        help="Maximum requests per minute (3 without API key, 10 with API key)",
+        help="Maximum requests per second (3 without API key, 10 with API key)",
     )
     parser.add_argument(
         "--max-retries", type=int, default=3, help="Maximum retries for failed requests"
@@ -77,7 +77,7 @@ async def main():
     logger.info(f"API key provided: {bool(api_key)}")
     logger.info(f"Data directory: {args.data_dir}")
     logger.info(f"Batch size: {args.batch_size}")
-    logger.info(f"Rate limit: {args.rate_limit} requests per minute")
+    logger.info(f"Rate limit: {args.rate_limit} requests per second")
 
     try:
         # Create the client
@@ -90,9 +90,10 @@ async def main():
             pubmed_client=pubmed_client,
             data_dir=args.data_dir,
             batch_size=args.batch_size,
-            rate_limit_per_min=args.rate_limit,
+            rate_limit_per_sec=args.rate_limit,
             max_retries=args.max_retries,
             retry_delay=args.retry_delay,
+            concurrent_requests=args.rate_limit,  # Set concurrent requests to match rate limit
         )
 
         result = await data_fetcher.run()
