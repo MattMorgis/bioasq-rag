@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 
 class PubMedClient(ABC):
@@ -22,7 +22,8 @@ class PubMedClient(ABC):
             - publication_date: Publication date
 
         Raises:
-            PubMedClientError: If there's an error retrieving the abstract
+            PubMedRateLimitError: If the request is rate limited
+            PubMedClientError: If there's another error retrieving the abstract
         """
         pass
 
@@ -38,7 +39,8 @@ class PubMedClient(ABC):
             List of dictionaries containing the abstract data
 
         Raises:
-            PubMedClientError: If there's an error retrieving the abstracts
+            PubMedRateLimitError: If the request is rate limited
+            PubMedClientError: If there's another error retrieving the abstracts
         """
         pass
 
@@ -46,4 +48,27 @@ class PubMedClient(ABC):
 class PubMedClientError(Exception):
     """Base exception for PubMed client errors."""
 
-    pass
+    def __init__(self, message: str, status_code: Optional[int] = None):
+        """
+        Initialize the exception.
+
+        Args:
+            message: Error message
+            status_code: Optional HTTP status code
+        """
+        self.status_code = status_code
+        super().__init__(message)
+
+
+class PubMedRateLimitError(PubMedClientError):
+    """Exception for rate limit errors when accessing PubMed API."""
+
+    def __init__(self, message: str, status_code: int = 429):
+        """
+        Initialize the rate limit exception.
+
+        Args:
+            message: Error message
+            status_code: HTTP status code (defaults to 429 Too Many Requests)
+        """
+        super().__init__(message, status_code)

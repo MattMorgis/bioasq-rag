@@ -1,10 +1,15 @@
 import asyncio
 import logging
+import urllib.error
 from typing import Any, Dict, List, Optional
 
 from Bio import Entrez, Medline
 
-from src.data_pipelines.clients.pubmed_client import PubMedClient, PubMedClientError
+from src.data_pipelines.clients.pubmed_client import (
+    PubMedClient,
+    PubMedClientError,
+    PubMedRateLimitError,
+)
 
 
 class BioPythonPubMedClient(PubMedClient):
@@ -38,10 +43,25 @@ class BioPythonPubMedClient(PubMedClient):
             A dictionary containing the abstract data
 
         Raises:
+            PubMedRateLimitError: If the request is rate limited (HTTP 429)
             PubMedClientError: If there's an error retrieving the abstract
         """
         try:
             return await asyncio.to_thread(self._fetch_abstract, pubmed_id)
+        except urllib.error.HTTPError as e:
+            if e.code == 429:
+                self.logger.warning(
+                    f"Rate limit exceeded for PubMed abstract {pubmed_id}: {str(e)}"
+                )
+                raise PubMedRateLimitError(
+                    f"Rate limit exceeded for ID: {pubmed_id}", status_code=429
+                ) from e
+            self.logger.error(
+                f"HTTP error fetching PubMed abstract {pubmed_id}: {str(e)}"
+            )
+            raise PubMedClientError(
+                f"Failed to retrieve abstract for ID: {pubmed_id}", status_code=e.code
+            ) from e
         except Exception as e:
             self.logger.error(f"Error fetching PubMed abstract {pubmed_id}: {str(e)}")
             raise PubMedClientError(

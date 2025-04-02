@@ -10,3 +10,4 @@
 - Added support for loading NCBI API key from .env file automatically when running data_pipelines
 - Removed batch PubMed API requests in BioPythonPubMedClient in favor of individual requests to address API errors and improve reliability
 - Optimized DataFetcher to utilize full API rate limit of 10 requests per second, replacing batch sequential processing with fully concurrent request model
+- Improved HTTP 429 rate limit error handling with specific PubMedRateLimitError exception and exponential backoff retry strategy

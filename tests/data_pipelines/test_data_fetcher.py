@@ -5,7 +5,11 @@ from unittest.mock import AsyncMock, MagicMock, mock_open, patch
 
 import pytest
 
-from src.data_pipelines.clients.pubmed_client import PubMedClient, PubMedClientError
+from src.data_pipelines.clients.pubmed_client import (
+    PubMedClient,
+    PubMedClientError,
+    PubMedRateLimitError,
+)
 from src.data_pipelines.data_fetcher import DataFetcher
 from src.data_pipelines.pubmed_url_collector import PubMedURLCollector
 
@@ -142,7 +146,7 @@ async def test_fetch_single_abstract_rate_limit(data_fetcher, mock_pubmed_client
     """Test rate limit handling during single abstract fetching."""
     # Configure the mock client to raise rate limit error first, then succeed
     mock_pubmed_client.get_abstract_by_id.side_effect = [
-        PubMedClientError("Rate limit exceeded"),
+        PubMedRateLimitError("Rate limit exceeded", status_code=429),
         mock_pubmed_abstract,  # Second call succeeds
     ]
 

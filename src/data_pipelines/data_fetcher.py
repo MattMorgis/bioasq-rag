@@ -5,7 +5,11 @@ import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set
 
-from src.data_pipelines.clients.pubmed_client import PubMedClient, PubMedClientError
+from src.data_pipelines.clients.pubmed_client import (
+    PubMedClient,
+    PubMedClientError,
+    PubMedRateLimitError,
+)
 from src.data_pipelines.pubmed_url_collector import PubMedURLCollector
 
 
@@ -128,26 +132,36 @@ class DataFetcher:
                         json.dump(abstract, f, indent=2)
 
                     return abstract
-                except PubMedClientError as e:
-                    if (
-                        "rate limit" in str(e).lower()
-                        and attempt < self.max_retries - 1
-                    ):
-                        wait_time = self.retry_delay * (attempt + 1)
+                except PubMedRateLimitError:
+                    # Handle rate limit errors specifically with exponential backoff
+                    if attempt < self.max_retries - 1:
+                        wait_time = self.retry_delay * (
+                            2**attempt
+                        )  # Exponential backoff
                         self.logger.warning(
-                            f"Rate limit hit for {url}. Retrying in {wait_time} seconds..."
+                            f"Rate limit hit for {url} (HTTP 429). Retrying in {wait_time} seconds..."
                         )
                         await asyncio.sleep(wait_time)
                     else:
                         self.logger.error(
-                            f"Error fetching abstract for {url}: {str(e)}"
+                            f"Rate limit exceeded for {url} after {self.max_retries} attempts."
                         )
                         return None
+                except PubMedClientError as e:
+                    # Other client errors - generally not worth retrying
+                    self.logger.error(f"Error fetching abstract for {url}: {str(e)}")
+                    return None
                 except Exception as e:
+                    # Unexpected errors
                     self.logger.error(
                         f"Unexpected error fetching abstract for {url}: {str(e)}"
                     )
-                    return None
+                    if attempt < self.max_retries - 1:
+                        wait_time = self.retry_delay * (attempt + 1)
+                        self.logger.warning(f"Retrying in {wait_time} seconds...")
+                        await asyncio.sleep(wait_time)
+                    else:
+                        return None
 
             return None
 

@@ -1,10 +1,14 @@
+import urllib.error
 from typing import Any, Dict
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
 from src.data_pipelines.clients.biopython_pubmed_client import BioPythonPubMedClient
-from src.data_pipelines.clients.pubmed_client import PubMedClientError
+from src.data_pipelines.clients.pubmed_client import (
+    PubMedClientError,
+    PubMedRateLimitError,
+)
 
 
 @pytest.fixture
@@ -92,6 +96,27 @@ async def test_get_abstract_by_id_api_error(biopython_pubmed_client):
             await biopython_pubmed_client.get_abstract_by_id("12345")
 
         assert "Failed to retrieve abstract" in str(exc_info.value)
+
+
+@pytest.mark.asyncio
+async def test_get_abstract_by_id_rate_limit_error(biopython_pubmed_client):
+    """Test that HTTP 429 errors raise the specific PubMedRateLimitError."""
+    http_error = urllib.error.HTTPError(
+        url="https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi",
+        code=429,
+        msg="Too Many Requests",
+        hdrs={},
+        fp=None,
+    )
+
+    with patch("Bio.Entrez.efetch", side_effect=http_error):
+        # Verify that a PubMedRateLimitError is raised
+        with pytest.raises(PubMedRateLimitError) as exc_info:
+            await biopython_pubmed_client.get_abstract_by_id("12345")
+
+        # Check error details
+        assert "Rate limit exceeded" in str(exc_info.value)
+        assert exc_info.value.status_code == 429
 
 
 @pytest.mark.asyncio
