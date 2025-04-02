@@ -10,10 +10,10 @@ To run the fetcher:
 
 ```bash
 # Basic usage
-python -m src.data_pipelines.run --email your.email@example.com
+uv run src/data_pipelines/run.py --email your.email@example.com
 
 # Advanced usage with all parameters
-python -m src.data_pipelines.run \
+uv run src/data_pipelines/run.py \
   --email your.email@example.com \
   --api-key YOUR_NCBI_API_KEY \
   --data-dir data \
@@ -37,10 +37,10 @@ python -m src.data_pipelines.run \
 
 The fetcher will:
 
-1. Collect all unique PubMed URLs from the BioASQ dataset
+1. Collect all unique PubMed URLs from the BioASQ dataset, both training and gold sets.
 2. Download abstracts in parallel batches while respecting rate limits
 3. Handle retries for rate limit errors
 4. Skip abstracts that have already been downloaded
 5. Save abstracts as JSON files in the `data/abstracts` directory
 
-Fetching all ~50,000 abstracts will take several hours due to NCBI API rate limits.
+Fetching all ~50,000 abstracts should take 1.5~ hours with the rate limit of 10 per second.
