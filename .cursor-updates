@@ -1,0 +1,3 @@
+# .cursor-updates
+
+- Implemented BioPythonPubMedClient using Biopython for PubMed abstract retrieval with tests
