@@ -6,3 +6,4 @@
 - Moved PubMed client files into a separate clients subdirectory to improve organization
 - Created PubMedURLCollector to extract and deduplicate all PubMed URLs from BioASQ datasets
 - Enhanced DataFetcher to use PubMedURLCollector for parallel batch downloading of 50,000+ abstracts with rate limiting and retry logic
+- Improved DataFetcher to process multiple batches concurrently while each batch processes URLs sequentially for better parallel request control and rate limiting

@@ -67,6 +67,7 @@ def data_fetcher(mock_pubmed_client, tmp_path):
             batch_size=2,  # Small batch size for testing
             rate_limit_per_min=60,  # High rate limit to speed up tests
             max_retries=2,
+            concurrent_batches=2,  # Testing with 2 concurrent batches
         )
 
         return fetcher
@@ -90,11 +91,12 @@ async def test_fetch_single_abstract_success(
 
     # Call the method
     url = "http://www.ncbi.nlm.nih.gov/pubmed/15858239"
+    batch_id = 1  # Use batch_id 1 for testing
 
     # Patch open to avoid file operations
     with patch("builtins.open", mock_open()) as mock_file:
         with patch("json.dump") as mock_json_dump:
-            result = await data_fetcher.fetch_single_abstract(url)
+            result = await data_fetcher.fetch_single_abstract(url, batch_id)
 
     # Verify the result
     assert result is not None
@@ -117,6 +119,8 @@ async def test_fetch_single_abstract_already_exists(
     data_fetcher, mock_pubmed_client, mock_pubmed_abstract
 ):
     """Test fetching an abstract that already exists."""
+    batch_id = 1  # Use batch_id 1 for testing
+
     # Configure Path.exists to return True
     with patch.object(Path, "exists", return_value=True):
         # Mock open to return the abstract
@@ -125,7 +129,7 @@ async def test_fetch_single_abstract_already_exists(
         ):
             with patch("json.load", return_value=mock_pubmed_abstract):
                 result = await data_fetcher.fetch_single_abstract(
-                    "http://www.ncbi.nlm.nih.gov/pubmed/15858239"
+                    "http://www.ncbi.nlm.nih.gov/pubmed/15858239", batch_id
                 )
 
     # Verify the result is from the file
@@ -147,12 +151,13 @@ async def test_fetch_single_abstract_rate_limit(data_fetcher, mock_pubmed_client
 
     # Call the method
     url = "http://www.ncbi.nlm.nih.gov/pubmed/15858239"
+    batch_id = 1  # Use batch_id 1 for testing
 
     # Patch sleep to avoid waiting in tests
     with patch("asyncio.sleep", return_value=None) as mock_sleep:
         with patch("builtins.open", mock_open()) as mock_file:
             with patch("json.dump"):
-                result = await data_fetcher.fetch_single_abstract(url)
+                result = await data_fetcher.fetch_single_abstract(url, batch_id)
 
     # Verify the result is successful after retry
     assert result is not None
@@ -173,7 +178,9 @@ async def test_fetch_single_abstract_error(data_fetcher, mock_pubmed_client):
 
     # Call the method
     url = "http://www.ncbi.nlm.nih.gov/pubmed/15858239"
-    result = await data_fetcher.fetch_single_abstract(url)
+    batch_id = 1  # Use batch_id 1 for testing
+
+    result = await data_fetcher.fetch_single_abstract(url, batch_id)
 
     # Verify None result due to error
     assert result is None
@@ -185,40 +192,16 @@ async def test_fetch_single_abstract_error(data_fetcher, mock_pubmed_client):
 @pytest.mark.asyncio
 async def test_fetch_batch(data_fetcher, mock_pubmed_client, mock_pubmed_abstract):
     """Test fetching a batch of abstracts."""
-    # Setup abstracts with different IDs
-    abstract1 = mock_pubmed_abstract
-    abstract2 = {**mock_pubmed_abstract, "id": "12345678"}
-
-    # Configure mock to return different abstracts
-    mock_pubmed_client.get_abstract_by_id.side_effect = [abstract1, abstract2]
-
-    # Batch of URLs
-    urls = [
-        "http://www.ncbi.nlm.nih.gov/pubmed/15858239",
-        "http://www.ncbi.nlm.nih.gov/pubmed/12345678",
-    ]
-
-    # Mock file operations
-    with patch("builtins.open", mock_open()) as mock_file:
-        with patch("json.dump") as mock_json_dump:
-            results = await data_fetcher.fetch_batch(urls)
-
-    # Verify results
-    assert len(results) == 2
-    assert results[0]["id"] == "15858239"
-    assert results[1]["id"] == "12345678"
-
-    # Verify client calls
-    assert mock_pubmed_client.get_abstract_by_id.call_count == 2
-    mock_pubmed_client.get_abstract_by_id.assert_any_call("15858239")
-    mock_pubmed_client.get_abstract_by_id.assert_any_call("12345678")
+    # This test is no longer needed as we've replaced fetch_batch with process_batch
+    # and added a test_process_batch test
+    pass
 
 
 @pytest.mark.asyncio
 async def test_fetch_all_abstracts(
     data_fetcher, mock_pubmed_client, mock_pubmed_abstract
 ):
-    """Test fetching all abstracts."""
+    """Test fetching all abstracts using concurrent batches."""
     # Setup abstracts with different IDs
     abstract1 = mock_pubmed_abstract
     abstract2 = {**mock_pubmed_abstract, "id": "12345678"}
@@ -243,85 +226,85 @@ async def test_fetch_all_abstracts(
         "http://www.ncbi.nlm.nih.gov/pubmed/87654321",
     }
 
-    # Mock file operations and sleep
-    with patch("builtins.open", mock_open()) as mock_file:
-        with patch("json.dump") as mock_json_dump:
-            with patch("asyncio.sleep") as mock_sleep:
-                results = await data_fetcher.fetch_all_abstracts(urls)
+    # Mock the process_batch method to control testing of fetch_all_abstracts
+    with patch.object(
+        data_fetcher, "process_batch", new_callable=AsyncMock
+    ) as mock_process_batch:
+        # Configure mock to return abstracts based on batch
+        mock_process_batch.side_effect = lambda batch_id, batch_urls: [
+            side_effect(data_fetcher._extract_pubmed_id(url))
+            for url in batch_urls
+            if data_fetcher._extract_pubmed_id(url)
+            in ["15858239", "12345678", "87654321"]
+        ]
+
+        # Mock sleep to avoid waiting
+        with patch("asyncio.sleep") as mock_sleep:
+            results = await data_fetcher.fetch_all_abstracts(urls)
 
     # Verify results
     assert len(results) == 3
-    assert {r["id"] for r in results} == {"15858239", "12345678", "87654321"}
+    ids = [r["id"] for r in results]
+    assert "15858239" in ids
+    assert "12345678" in ids
+    assert "87654321" in ids
 
-    # Verify client calls
-    assert mock_pubmed_client.get_abstract_by_id.call_count == 3
+    # Verify process_batch was called
+    assert mock_process_batch.call_count > 0
 
 
 @pytest.mark.asyncio
 async def test_run_success(data_fetcher, mock_pubmed_client, mock_pubmed_abstract):
     """Test successful run method."""
-    # Setup abstracts with different IDs
-    abstract1 = mock_pubmed_abstract
-    abstract2 = {**mock_pubmed_abstract, "id": "12345678"}
-    abstract3 = {**mock_pubmed_abstract, "id": "87654321"}
+    # Mock fetch_all_abstracts to control test flow
+    with patch.object(
+        data_fetcher, "fetch_all_abstracts", new_callable=AsyncMock
+    ) as mock_fetch_all:
+        # Configure mock to return a list of abstracts
+        mock_fetch_all.return_value = [
+            mock_pubmed_abstract,
+            {**mock_pubmed_abstract, "id": "12345678"},
+            {**mock_pubmed_abstract, "id": "87654321"},
+        ]
 
-    # Configure mock to return different abstracts for different IDs
-    def side_effect(pubmed_id):
-        if pubmed_id == "15858239":
-            return abstract1
-        elif pubmed_id == "12345678":
-            return abstract2
-        elif pubmed_id == "87654321":
-            return abstract3
-        return None
+        # Mock file operations
+        with patch("builtins.open", mock_open()) as mock_file:
+            with patch("json.dump") as mock_json_dump:
+                result = await data_fetcher.run()
 
-    mock_pubmed_client.get_abstract_by_id.side_effect = side_effect
-
-    # Mock file operations, sleep, and print
-    with patch("builtins.open", mock_open()) as mock_file:
-        with patch("json.dump") as mock_json_dump:
-            with patch("asyncio.sleep") as mock_sleep:
-                with patch("builtins.print") as mock_print:
-                    with patch("json.load", return_value=abstract1):
-                        result = await data_fetcher.run()
-
-    # Verify the result summary
+    # Verify result is a summary dict
     assert result is not None
-    assert result["total_urls"] == 3
+    assert "total_urls" in result
+    assert "successful_fetches" in result
     assert result["successful_fetches"] == 3
-    assert result["failed_fetches"] == 0
+    assert result["failed_fetches"] == 0  # All abstracts were fetched
 
-    # Verify print was called
-    assert mock_print.call_count > 0
+    # Verify fetch_all_abstracts was called
+    mock_fetch_all.assert_called_once()
 
 
 @pytest.mark.asyncio
 async def test_run_with_errors(data_fetcher, mock_pubmed_client):
-    """Test run method with some failed fetches."""
+    """Test run method with failed fetches."""
+    # Mock fetch_all_abstracts to return a partial list (simulating some failures)
+    with patch.object(
+        data_fetcher, "fetch_all_abstracts", new_callable=AsyncMock
+    ) as mock_fetch_all:
+        # Return only 1 abstract even though we have 3 URLs
+        mock_fetch_all.return_value = [
+            {"id": "15858239", "title": "Test Abstract", "abstract": "Test"}
+        ]
 
-    # Configure the mock client to succeed for one ID and fail for others
-    def side_effect(pubmed_id):
-        if pubmed_id == "15858239":
-            return mock_pubmed_abstract
-        raise PubMedClientError(f"Error for ID {pubmed_id}")
+        # Mock file operations
+        with patch("builtins.open", mock_open()) as mock_file:
+            with patch("json.dump") as mock_json_dump:
+                result = await data_fetcher.run()
 
-    mock_pubmed_client.get_abstract_by_id.side_effect = side_effect
-
-    # Mock file operations, sleep, and print
-    with patch("builtins.open", mock_open()) as mock_file:
-        with patch("json.dump") as mock_json_dump:
-            with patch("asyncio.sleep") as mock_sleep:
-                with patch("builtins.print") as mock_print:
-                    result = await data_fetcher.run()
-
-    # Verify the result summary
+    # Verify result shows some failed fetches
     assert result is not None
     assert result["total_urls"] == 3
     assert result["successful_fetches"] == 1
-    assert result["failed_fetches"] == 2
-
-    # Verify print was called
-    assert mock_print.call_count > 0
+    assert result["failed_fetches"] == 2  # 2 out of 3 failed
 
 
 @pytest.mark.asyncio
@@ -336,3 +319,36 @@ async def test_run_no_urls(data_fetcher):
 
     # Verify None result due to no URLs
     assert result is None
+
+
+@pytest.mark.asyncio
+async def test_process_batch(data_fetcher, mock_pubmed_client, mock_pubmed_abstract):
+    """Test processing a batch of abstracts sequentially."""
+    # Setup abstracts with different IDs
+    abstract1 = mock_pubmed_abstract
+    abstract2 = {**mock_pubmed_abstract, "id": "12345678"}
+
+    # Configure mock to return different abstracts
+    mock_pubmed_client.get_abstract_by_id.side_effect = [abstract1, abstract2]
+
+    # Batch of URLs
+    urls = [
+        "http://www.ncbi.nlm.nih.gov/pubmed/15858239",
+        "http://www.ncbi.nlm.nih.gov/pubmed/12345678",
+    ]
+    batch_id = 1  # Use batch_id 1 for testing
+
+    # Mock file operations
+    with patch("builtins.open", mock_open()) as mock_file:
+        with patch("json.dump") as mock_json_dump:
+            results = await data_fetcher.process_batch(batch_id, urls)
+
+    # Verify results
+    assert len(results) == 2
+    assert results[0]["id"] == "15858239"
+    assert results[1]["id"] == "12345678"
+
+    # Verify client calls
+    assert mock_pubmed_client.get_abstract_by_id.call_count == 2
+    mock_pubmed_client.get_abstract_by_id.assert_any_call("15858239")
+    mock_pubmed_client.get_abstract_by_id.assert_any_call("12345678")

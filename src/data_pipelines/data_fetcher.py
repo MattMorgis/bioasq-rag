@@ -23,6 +23,7 @@ class DataFetcher:
         rate_limit_per_min: int = 10,
         max_retries: int = 3,
         retry_delay: int = 5,
+        concurrent_batches: int = 4,
     ):
         """
         Initialize the DataFetcher with a PubMedClient implementation.
@@ -34,6 +35,7 @@ class DataFetcher:
             rate_limit_per_min: Maximum number of API requests per minute
             max_retries: Maximum number of retries for failed requests
             retry_delay: Delay in seconds between retries
+            concurrent_batches: Number of batches to process concurrently
         """
         self.pubmed_client = pubmed_client
         self.logger = logging.getLogger(__name__)
@@ -45,12 +47,14 @@ class DataFetcher:
         self.rate_limit_per_min = rate_limit_per_min
         self.max_retries = max_retries
         self.retry_delay = retry_delay
+        self.concurrent_batches = concurrent_batches
 
         # Calculate delay between requests to respect rate limit
-        self.request_delay = 60.0 / rate_limit_per_min
+        # Adjust for concurrent batches to maintain overall rate limit
+        self.request_delay = (60.0 * concurrent_batches) / rate_limit_per_min
 
-        # For tracking rate limits
-        self.last_request_time = 0.0
+        # For tracking rate limits (one per batch)
+        self.last_request_times: Dict[int, float] = {}
 
         # URL collector for getting PubMed URLs
         self.url_collector = PubMedURLCollector(data_dir=data_dir)
@@ -68,40 +72,48 @@ class DataFetcher:
         # Simple extraction based on URL structure
         return url.split("/")[-1]
 
-    async def fetch_single_abstract(self, url: str) -> Optional[Dict[str, Any]]:
+    async def fetch_single_abstract(
+        self, url: str, batch_id: int
+    ) -> Optional[Dict[str, Any]]:
         """
         Fetch a single abstract from a PubMed URL with retry logic.
 
         Args:
             url: PubMed URL
+            batch_id: ID of the batch processing this URL (for rate limiting)
 
         Returns:
             Dictionary containing abstract data or None if retrieval failed
         """
         pubmed_id = self._extract_pubmed_id(url)
-        self.logger.info(f"Fetching abstract for URL: {url}")
+        self.logger.info(f"Batch {batch_id}: Fetching abstract for URL: {url}")
 
         # Check if already saved
         abstract_path = self.abstracts_dir / f"{pubmed_id}.json"
         if abstract_path.exists():
-            self.logger.info(f"Abstract for {pubmed_id} already exists. Skipping.")
+            self.logger.info(
+                f"Batch {batch_id}: Abstract for {pubmed_id} already exists. Skipping."
+            )
             with open(abstract_path, "r", encoding="utf-8") as f:
                 return json.load(f)
 
-        # Implement rate limiting
+        # Implement rate limiting per batch
         now = time.time()
-        elapsed = now - self.last_request_time
+        last_time = self.last_request_times.get(batch_id, 0)
+        elapsed = now - last_time
         if elapsed < self.request_delay:
             await asyncio.sleep(self.request_delay - elapsed)
 
-        # Record request time
-        self.last_request_time = time.time()
+        # Record request time for this batch
+        self.last_request_times[batch_id] = time.time()
 
         # Retry logic
         for attempt in range(self.max_retries):
             try:
                 abstract = await self.pubmed_client.get_abstract_by_id(pubmed_id)
-                self.logger.info(f"Successfully fetched abstract for {url}")
+                self.logger.info(
+                    f"Batch {batch_id}: Successfully fetched abstract for {url}"
+                )
 
                 # Save the abstract
                 with open(abstract_path, "w", encoding="utf-8") as f:
@@ -112,37 +124,51 @@ class DataFetcher:
                 if "rate limit" in str(e).lower() and attempt < self.max_retries - 1:
                     wait_time = self.retry_delay * (attempt + 1)
                     self.logger.warning(
-                        f"Rate limit hit for {url}. Retrying in {wait_time} seconds..."
+                        f"Batch {batch_id}: Rate limit hit for {url}. Retrying in {wait_time} seconds..."
                     )
                     await asyncio.sleep(wait_time)
                 else:
-                    self.logger.error(f"Error fetching abstract for {url}: {str(e)}")
+                    self.logger.error(
+                        f"Batch {batch_id}: Error fetching abstract for {url}: {str(e)}"
+                    )
                     return None
             except Exception as e:
                 self.logger.error(
-                    f"Unexpected error fetching abstract for {url}: {str(e)}"
+                    f"Batch {batch_id}: Unexpected error fetching abstract for {url}: {str(e)}"
                 )
                 return None
 
         return None
 
-    async def fetch_batch(self, urls: List[str]) -> List[Dict[str, Any]]:
+    async def process_batch(
+        self, batch_id: int, urls: List[str]
+    ) -> List[Dict[str, Any]]:
         """
-        Fetch a batch of abstracts in parallel.
+        Process a batch of URLs sequentially.
 
         Args:
-            urls: List of PubMed URLs to fetch
+            batch_id: Identifier for this batch
+            urls: List of URLs to process in this batch
 
         Returns:
             List of successfully fetched abstracts
         """
-        tasks = [self.fetch_single_abstract(url) for url in urls]
-        results = await asyncio.gather(*tasks)
-        return [r for r in results if r is not None]
+        self.logger.info(f"Starting batch {batch_id} with {len(urls)} URLs")
+        results = []
+
+        for url in urls:
+            result = await self.fetch_single_abstract(url, batch_id)
+            if result:
+                results.append(result)
+
+        self.logger.info(
+            f"Completed batch {batch_id}: fetched {len(results)}/{len(urls)} abstracts"
+        )
+        return results
 
     async def fetch_all_abstracts(self, urls: Set[str]) -> List[Dict[str, Any]]:
         """
-        Fetch all abstracts from a set of URLs using batching.
+        Fetch all abstracts from a set of URLs using concurrent batches.
 
         Args:
             urls: Set of PubMed URLs to fetch
@@ -155,24 +181,34 @@ class DataFetcher:
         total_urls = len(url_list)
 
         self.logger.info(
-            f"Starting to fetch {total_urls} abstracts in batches of {self.batch_size}"
+            f"Starting to fetch {total_urls} abstracts with {self.concurrent_batches} concurrent batches"
         )
 
+        # Split URLs into batches
+        batches = []
         for i in range(0, total_urls, self.batch_size):
-            batch_urls = url_list[i : i + self.batch_size]
-            self.logger.info(
-                f"Fetching batch {i // self.batch_size + 1}/{(total_urls + self.batch_size - 1) // self.batch_size}: {len(batch_urls)} URLs"
-            )
+            batches.append(url_list[i : i + self.batch_size])
 
-            batch_results = await self.fetch_batch(batch_urls)
-            all_abstracts.extend(batch_results)
+        # Process batches in chunks of concurrent_batches
+        for i in range(0, len(batches), self.concurrent_batches):
+            concurrent_batch = batches[i : i + self.concurrent_batches]
+
+            # Create tasks for each batch
+            tasks = [
+                self.process_batch(i + j, batch_urls)
+                for j, batch_urls in enumerate(concurrent_batch)
+            ]
+
+            # Run concurrent batches
+            batch_results = await asyncio.gather(*tasks)
+
+            # Collect results
+            for results in batch_results:
+                all_abstracts.extend(results)
 
             self.logger.info(
                 f"Fetched {len(all_abstracts)}/{total_urls} abstracts so far"
             )
-
-            # Brief pause between batches to prevent overwhelming the API
-            await asyncio.sleep(1)
 
         return all_abstracts
 
