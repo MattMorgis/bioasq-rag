@@ -9,22 +9,7 @@ from dotenv import load_dotenv
 
 from src.data_pipelines.clients.biopython_pubmed_client import BioPythonPubMedClient
 from src.data_pipelines.data_fetcher import DataFetcher
-
-
-def setup_logging(log_level: str = "INFO") -> None:
-    """Set up logging configuration."""
-    numeric_level = getattr(logging, log_level.upper(), None)
-    if not isinstance(numeric_level, int):
-        raise ValueError(f"Invalid log level: {log_level}")
-
-    logging.basicConfig(
-        level=numeric_level,
-        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-        handlers=[
-            logging.StreamHandler(sys.stdout),
-            logging.FileHandler("pubmed_fetcher.log"),
-        ],
-    )
+from src.data_pipelines.utils.logging_utils import setup_logging
 
 
 async def main():
@@ -64,9 +49,18 @@ async def main():
         choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
         help="Set the logging level",
     )
+    parser.add_argument(
+        "--log-file",
+        default="pubmed_fetcher.log",
+        help="File to save logs to (use 'none' to disable file logging)",
+    )
 
     args = parser.parse_args()
-    setup_logging(args.log_level)
+
+    # Set up logging with the new utility
+    log_file = None if args.log_file.lower() == "none" else args.log_file
+    setup_logging(args.log_level, log_file)
+
     logger = logging.getLogger(__name__)
 
     # Use the API key from .env file if not provided via command line

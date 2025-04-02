@@ -3,6 +3,8 @@ import logging
 from pathlib import Path
 from typing import Set
 
+from src.data_pipelines.utils.logging_utils import setup_logging
+
 logger = logging.getLogger(__name__)
 
 
@@ -100,10 +102,9 @@ class PubMedURLCollector:
 
 
 if __name__ == "__main__":
-    logging.basicConfig(
-        level=logging.INFO,
-        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    )
+    # Set up logging to both console and file
+    setup_logging(log_level="INFO", log_file="url_collector.log")
+
     collector = PubMedURLCollector()
     collector.collect_urls()
     collector.save_urls_to_file()
