@@ -1,7 +1,7 @@
 import logging
 from typing import Any, Dict, Optional
 
-from src.data_pipelines.pubmed_client import PubMedClient
+from src.data_pipelines.clients.pubmed_client import PubMedClient
 
 
 class DataFetcher:

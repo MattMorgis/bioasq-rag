@@ -3,7 +3,7 @@ import asyncio
 import logging
 import sys
 
-from src.data_pipelines.biopython_pubmed_client import BioPythonPubMedClient
+from src.data_pipelines.clients.biopython_pubmed_client import BioPythonPubMedClient
 from src.data_pipelines.data_fetcher import DataFetcher
 
 # Configure logging

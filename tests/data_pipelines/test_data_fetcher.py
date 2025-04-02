@@ -3,8 +3,8 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
+from src.data_pipelines.clients.pubmed_client import PubMedClient, PubMedClientError
 from src.data_pipelines.data_fetcher import DataFetcher
-from src.data_pipelines.pubmed_client import PubMedClient, PubMedClientError
 
 
 @pytest.fixture

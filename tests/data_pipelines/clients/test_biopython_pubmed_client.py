@@ -3,8 +3,8 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from src.data_pipelines.biopython_pubmed_client import BioPythonPubMedClient
-from src.data_pipelines.pubmed_client import PubMedClientError
+from src.data_pipelines.clients.biopython_pubmed_client import BioPythonPubMedClient
+from src.data_pipelines.clients.pubmed_client import PubMedClientError
 
 
 @pytest.fixture

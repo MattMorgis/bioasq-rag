@@ -3,3 +3,4 @@
 - Implemented BioPythonPubMedClient using Biopython for PubMed abstract retrieval with tests
 - Created DataFetcher class to fetch PubMed abstracts from a hardcoded URL with tests
 - Added a run_fetcher.py script to demonstrate how to use the DataFetcher
+- Moved PubMed client files into a separate clients subdirectory to improve organization
