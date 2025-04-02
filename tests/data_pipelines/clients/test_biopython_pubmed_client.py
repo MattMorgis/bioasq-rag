@@ -1,5 +1,5 @@
 from typing import Any, Dict
-from unittest.mock import MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
@@ -99,17 +99,38 @@ async def test_get_abstracts_by_ids_success(
     biopython_pubmed_client, mock_record, mock_handle
 ):
     """Test successful retrieval of multiple abstracts."""
-    records = [
-        mock_record,
-        {**mock_record, "PMID": "67890", "TI": "Second Test Article"},
-    ]
+    record1 = mock_record
+    record2 = {**mock_record, "PMID": "67890", "TI": "Second Test Article"}
 
-    with (
-        patch("Bio.Entrez.efetch", return_value=mock_handle),
-        patch("Bio.Medline.parse") as mock_parse,
-    ):
-        # Configure the mock to return our test records
-        mock_parse.return_value = records
+    with patch.object(
+        biopython_pubmed_client, "get_abstract_by_id", new_callable=AsyncMock
+    ) as mock_get_abstract:
+        # Configure the mock to return different abstract for each ID
+        mock_get_abstract.side_effect = [
+            # Format each record with _format_record
+            {
+                "id": "12345",
+                "title": "Test Article Title",
+                "abstract": "This is a test abstract for the BioPython PubMed client.",
+                "authors": ["Smith, John", "Doe, Jane"],
+                "publication_date": "2024 Jan 15",
+                "journal": "Journal of Testing",
+                "doi": "10.1234/test.12345",
+                "keywords": ["Bioinformatics", "Testing", "Python"],
+                "mesh_terms": ["Bioinformatics", "Testing", "Python"],
+            },
+            {
+                "id": "67890",
+                "title": "Second Test Article",
+                "abstract": "This is a test abstract for the BioPython PubMed client.",
+                "authors": ["Smith, John", "Doe, Jane"],
+                "publication_date": "2024 Jan 15",
+                "journal": "Journal of Testing",
+                "doi": "10.1234/test.12345",
+                "keywords": ["Bioinformatics", "Testing", "Python"],
+                "mesh_terms": ["Bioinformatics", "Testing", "Python"],
+            },
+        ]
 
         # Call the method
         results = await biopython_pubmed_client.get_abstracts_by_ids(["12345", "67890"])
@@ -120,32 +141,64 @@ async def test_get_abstracts_by_ids_success(
         assert results[1]["id"] == "67890"
         assert results[1]["title"] == "Second Test Article"
 
+        # Verify get_abstract_by_id was called for each ID
+        assert mock_get_abstract.call_count == 2
+        mock_get_abstract.assert_any_call("12345")
+        mock_get_abstract.assert_any_call("67890")
+
 
 @pytest.mark.asyncio
-async def test_get_abstracts_by_ids_missing_records(
-    biopython_pubmed_client, mock_handle
-):
-    """Test error handling when not all requested records are found."""
-    with (
-        patch("Bio.Entrez.efetch", return_value=mock_handle),
-        patch("Bio.Medline.parse") as mock_parse,
-    ):
-        # Configure the mock to return fewer records than requested
-        mock_parse.return_value = []
+async def test_get_abstracts_by_ids_missing_records(biopython_pubmed_client):
+    """Test handling when some records are not found."""
+    with patch.object(
+        biopython_pubmed_client, "get_abstract_by_id", new_callable=AsyncMock
+    ) as mock_get_abstract:
+        # Configure mock to raise exception for some IDs
+        async def side_effect(pubmed_id):
+            if pubmed_id == "12345":
+                return {
+                    "id": "12345",
+                    "title": "Test Article Title",
+                    "abstract": "This is a test abstract.",
+                    "authors": ["Smith, John"],
+                    "publication_date": "2024 Jan 15",
+                    "journal": "Journal of Testing",
+                    "doi": "10.1234/test.12345",
+                    "keywords": ["Testing"],
+                    "mesh_terms": ["Testing"],
+                }
+            else:
+                raise PubMedClientError(f"No abstract found for ID: {pubmed_id}")
 
-        # Verify that an exception is raised
-        with pytest.raises(PubMedClientError) as exc_info:
-            await biopython_pubmed_client.get_abstracts_by_ids(["12345", "67890"])
+        mock_get_abstract.side_effect = side_effect
 
-        assert "Failed to retrieve one or more abstracts" in str(exc_info.value)
+        # Call the method - should not raise an exception but return partial results
+        results = await biopython_pubmed_client.get_abstracts_by_ids(["12345", "67890"])
+
+        # Should only have one result
+        assert len(results) == 1
+        assert results[0]["id"] == "12345"
+
+        # Verify get_abstract_by_id was called for each ID
+        assert mock_get_abstract.call_count == 2
+        mock_get_abstract.assert_any_call("12345")
+        mock_get_abstract.assert_any_call("67890")
 
 
 @pytest.mark.asyncio
 async def test_get_abstracts_by_ids_api_error(biopython_pubmed_client):
-    """Test error handling when the NCBI API returns an error for multiple IDs."""
-    with patch("Bio.Entrez.efetch", side_effect=Exception("API error")):
-        # Verify that an exception is raised
-        with pytest.raises(PubMedClientError) as exc_info:
-            await biopython_pubmed_client.get_abstracts_by_ids(["12345", "67890"])
+    """Test handling when API errors occur for all IDs."""
+    with patch.object(
+        biopython_pubmed_client, "get_abstract_by_id", new_callable=AsyncMock
+    ) as mock_get_abstract:
+        # Configure mock to raise exception for all IDs
+        mock_get_abstract.side_effect = PubMedClientError("API error")
 
-        assert "Failed to retrieve" in str(exc_info.value)
+        # Call the method - should not raise but return empty results
+        results = await biopython_pubmed_client.get_abstracts_by_ids(["12345", "67890"])
+
+        # Should have no results
+        assert len(results) == 0
+
+        # Verify get_abstract_by_id was called for each ID
+        assert mock_get_abstract.call_count == 2

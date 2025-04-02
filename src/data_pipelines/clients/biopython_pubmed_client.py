@@ -61,11 +61,22 @@ class BioPythonPubMedClient(PubMedClient):
         Raises:
             PubMedClientError: If there's an error retrieving the abstracts
         """
-        try:
-            return await asyncio.to_thread(self._fetch_multiple_abstracts, pubmed_ids)
-        except Exception as e:
-            self.logger.error(f"Error fetching multiple PubMed abstracts: {str(e)}")
-            raise PubMedClientError("Failed to retrieve one or more abstracts") from e
+        results = []
+        failed_ids = []
+
+        # Get abstracts individually instead of in batch
+        for pubmed_id in pubmed_ids:
+            try:
+                abstract = await self.get_abstract_by_id(pubmed_id)
+                results.append(abstract)
+            except PubMedClientError:
+                failed_ids.append(pubmed_id)
+
+        # If any abstracts failed to retrieve, log the error
+        if failed_ids:
+            self.logger.warning(f"Failed to retrieve abstracts for IDs: {failed_ids}")
+
+        return results
 
     def _fetch_abstract(self, pubmed_id: str) -> Dict[str, Any]:
         """
@@ -88,30 +99,6 @@ class BioPythonPubMedClient(PubMedClient):
             raise PubMedClientError(f"No abstract found for ID: {pubmed_id}")
 
         return self._format_record(record, pubmed_id)
-
-    def _fetch_multiple_abstracts(self, pubmed_ids: List[str]) -> List[Dict[str, Any]]:
-        """
-        Fetch multiple abstracts using BioPython's batch retrieval.
-
-        Args:
-            pubmed_ids: List of PubMed IDs
-
-        Returns:
-            List of formatted abstract data
-        """
-        handle = Entrez.efetch(
-            db="pubmed", id=",".join(pubmed_ids), rettype="medline", retmode="text"
-        )
-        records = list(Medline.parse(handle))
-        handle.close()
-
-        if not records or len(records) != len(pubmed_ids):
-            raise PubMedClientError("Could not retrieve all requested abstracts")
-
-        return [
-            self._format_record(record, pubmed_id)
-            for record, pubmed_id in zip(records, pubmed_ids)
-        ]
 
     def _format_record(self, record: Dict[str, Any], pubmed_id: str) -> Dict[str, Any]:
         """

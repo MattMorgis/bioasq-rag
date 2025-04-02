@@ -8,3 +8,4 @@
 - Enhanced DataFetcher to use PubMedURLCollector for parallel batch downloading of 50,000+ abstracts with rate limiting and retry logic
 - Improved DataFetcher to process multiple batches concurrently while each batch processes URLs sequentially for better parallel request control and rate limiting
 - Added support for loading NCBI API key from .env file automatically when running data_pipelines
+- Removed batch PubMed API requests in BioPythonPubMedClient in favor of individual requests to address API errors and improve reliability
