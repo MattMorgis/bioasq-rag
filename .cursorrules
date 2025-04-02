@@ -12,6 +12,7 @@ This project uses `uv` for project management.
 `uv sync`: Sync the project's dependencies with the environment.
 `uv lock`: Create a lockfile for the project's dependencies.
 `uv run`: Run a command in the project environment.
+Example: `uv run src/data_pipelines/run.py`
 `uv tree`: View the dependency tree for the project.
 
 ### Test Fixtures
