@@ -13,3 +13,4 @@
 - Improved HTTP 429 rate limit error handling with specific PubMedRateLimitError exception and exponential backoff retry strategy
 - Added functionality to track and save failed download URLs to data/failed_urls.json for later retry
 - Added centralized logging utility for consistent logging to both console and file across all modules with configurable log levels
+- Created retry_failed.py script with tests to recover the remaining failed PubMed abstract URLs with more conservative rate limiting
