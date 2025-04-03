@@ -5,13 +5,13 @@ from unittest.mock import AsyncMock, MagicMock, mock_open, patch
 
 import pytest
 
-from src.data_pipelines.clients.pubmed_client import (
+from src.data_collection.clients.pubmed_client import (
     PubMedClient,
     PubMedClientError,
     PubMedRateLimitError,
 )
-from src.data_pipelines.data_fetcher import DataFetcher
-from src.data_pipelines.pubmed_url_collector import PubMedURLCollector
+from src.data_collection.data_fetcher import DataFetcher
+from src.data_collection.pubmed_url_collector import PubMedURLCollector
 
 
 @pytest.fixture
@@ -54,7 +54,7 @@ def mock_url_collector():
 def data_fetcher(mock_pubmed_client, tmp_path):
     """Return a DataFetcher with a mock PubMedClient and temporary data directory."""
     with patch(
-        "src.data_pipelines.data_fetcher.PubMedURLCollector"
+        "src.data_collection.data_fetcher.PubMedURLCollector"
     ) as mock_collector_cls:
         # Configure the mock collector
         mock_collector = mock_collector_cls.return_value

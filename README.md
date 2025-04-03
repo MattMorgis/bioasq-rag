@@ -10,10 +10,10 @@ To run the fetcher:
 
 ```bash
 # Basic usage
-uv run src/data_pipelines/run.py --email your.email@example.com
+uv run src/data_collection/run.py --email your.email@example.com
 
 # Advanced usage with all parameters
-uv run src/data_pipelines/run.py \
+uv run src/data_collection/run.py \
   --email your.email@example.com \
   --api-key YOUR_NCBI_API_KEY \
   --data-dir data \

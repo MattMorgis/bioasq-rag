@@ -2,7 +2,7 @@ from typing import Any, Dict, List
 
 import pytest
 
-from src.data_pipelines.clients.pubmed_client import PubMedClient, PubMedClientError
+from src.data_collection.clients.pubmed_client import PubMedClient, PubMedClientError
 
 
 class MockPubMedClient(PubMedClient):

@@ -7,7 +7,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from src.data_pipelines.retry_failed import retry_failed_urls
+from src.data_collection.retry_failed import retry_failed_urls
 
 
 @pytest.fixture
@@ -44,10 +44,12 @@ async def test_retry_failed_urls_success(
     # Set up so all URLs are successfully fetched
     with (
         patch(
-            "src.data_pipelines.retry_failed.BioPythonPubMedClient",
+            "src.data_collection.retry_failed.BioPythonPubMedClient",
             return_value=mock_pubmed_client,
         ),
-        patch("src.data_pipelines.retry_failed.DataFetcher") as mock_data_fetcher_class,
+        patch(
+            "src.data_collection.retry_failed.DataFetcher"
+        ) as mock_data_fetcher_class,
     ):
         # Configure mock DataFetcher
         mock_data_fetcher = MagicMock()
@@ -94,10 +96,12 @@ async def test_retry_failed_urls_partial_success(
     # Set up for partial success (only 2 of 3 URLs succeed)
     with (
         patch(
-            "src.data_pipelines.retry_failed.BioPythonPubMedClient",
+            "src.data_collection.retry_failed.BioPythonPubMedClient",
             return_value=mock_pubmed_client,
         ),
-        patch("src.data_pipelines.retry_failed.DataFetcher") as mock_data_fetcher_class,
+        patch(
+            "src.data_collection.retry_failed.DataFetcher"
+        ) as mock_data_fetcher_class,
     ):
         # Configure mock DataFetcher
         mock_data_fetcher = MagicMock()
@@ -141,7 +145,7 @@ async def test_retry_failed_urls_no_file(mock_pubmed_client):
 
     try:
         with patch(
-            "src.data_pipelines.retry_failed.BioPythonPubMedClient",
+            "src.data_collection.retry_failed.BioPythonPubMedClient",
             return_value=mock_pubmed_client,
         ):
             # Run the function under test
@@ -167,7 +171,7 @@ async def test_retry_failed_urls_empty_file(mock_pubmed_client, mock_failed_urls
         json.dump([], f)
 
     with patch(
-        "src.data_pipelines.retry_failed.BioPythonPubMedClient",
+        "src.data_collection.retry_failed.BioPythonPubMedClient",
         return_value=mock_pubmed_client,
     ):
         # Run the function under test

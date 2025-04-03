@@ -5,7 +5,7 @@ from typing import Any, Dict, List, Optional
 
 from Bio import Entrez, Medline
 
-from src.data_pipelines.clients.pubmed_client import (
+from src.data_collection.clients.pubmed_client import (
     PubMedClient,
     PubMedClientError,
     PubMedRateLimitError,

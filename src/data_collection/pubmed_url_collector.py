@@ -3,7 +3,7 @@ import logging
 from pathlib import Path
 from typing import Set
 
-from src.data_pipelines.utils.logging_utils import setup_logging
+from src.data_collection.utils.logging_utils import setup_logging
 
 logger = logging.getLogger(__name__)
 
