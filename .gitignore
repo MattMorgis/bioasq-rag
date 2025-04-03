@@ -179,3 +179,5 @@ cython_debug/
 
 # BioASQ dataset
 data/abstracts/**/*.json
+data/failed_urls.json
+data/fetch_summary.json
