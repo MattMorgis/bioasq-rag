@@ -6,7 +6,7 @@
   },
   "ruff.lint.enable": true,
   "python.analysis.extraPaths": [
-    "./src"
+    "${workspaceFolder}"
   ],
   "python.testing.pytestEnabled": true,
   "python.testing.unittestEnabled": false,
