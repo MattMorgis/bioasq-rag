@@ -5,8 +5,6 @@ import os
 from src.corpus_processor import create_corpus
 from src.dataset_utils import (
     create_dataset_metadata,
-    create_dataset_readme,
-    prepare_huggingface_structure,
     validate_dataset,
 )
 from src.question_processor import create_question_datasets
@@ -79,14 +77,6 @@ def main():
     # Create dataset metadata
     logger.info("Creating dataset metadata")
     create_dataset_metadata(args.output_dir, corpus_count, dev_count, test_count)
-
-    # Create dataset README
-    logger.info("Creating dataset README")
-    create_dataset_readme(args.output_dir)
-
-    # Prepare Hugging Face structure
-    logger.info("Preparing Hugging Face structure")
-    prepare_huggingface_structure(args.output_dir)
 
     # Validate dataset
     logger.info("Validating dataset")

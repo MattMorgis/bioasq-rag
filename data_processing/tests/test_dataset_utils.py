@@ -3,8 +3,6 @@ import os
 
 from src.dataset_utils import (
     create_dataset_metadata,
-    create_dataset_readme,
-    prepare_huggingface_structure,
     validate_dataset,
 )
 
@@ -37,46 +35,6 @@ def test_create_dataset_metadata(temp_output_dir):
         assert "questions" in metadata["features"]
         assert len(metadata["features"]["corpus"]) > 0
         assert len(metadata["features"]["questions"]) > 0
-
-
-def test_create_dataset_readme(temp_output_dir):
-    """Test creating dataset README."""
-    # Create README
-    create_dataset_readme(temp_output_dir)
-
-    # Check that the README file exists
-    readme_path = os.path.join(temp_output_dir, "README.md")
-    assert os.path.exists(readme_path)
-
-    # Check the content of the README file
-    with open(readme_path, "r", encoding="utf-8") as f:
-        readme_content = f.read()
-
-        # Check that the README contains important sections
-        assert "BioASQ 12B RAG Dataset" in readme_content
-        assert "Dataset Structure" in readme_content
-        assert "Corpus" in readme_content
-        assert "Dev Questions" in readme_content
-        assert "Test Questions" in readme_content
-        assert "Usage" in readme_content
-        assert "License" in readme_content
-
-
-def test_prepare_huggingface_structure(temp_output_dir):
-    """Test preparing Hugging Face structure."""
-    # Prepare Hugging Face structure
-    prepare_huggingface_structure(temp_output_dir)
-
-    # Check that the .gitattributes file exists
-    gitattributes_path = os.path.join(temp_output_dir, ".gitattributes")
-    assert os.path.exists(gitattributes_path)
-
-    # Check the content of the .gitattributes file
-    with open(gitattributes_path, "r", encoding="utf-8") as f:
-        content = f.read()
-
-        # Check that the file contains the expected content
-        assert "*.jsonl filter=lfs diff=lfs merge=lfs -text" in content
 
 
 def test_validate_dataset_success(temp_output_dir):
