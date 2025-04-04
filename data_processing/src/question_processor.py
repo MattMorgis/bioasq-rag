@@ -119,12 +119,6 @@ def create_question_datasets(
     # Use training file for dev dataset
     dev_questions = process_question_file(training_file)
 
-    # We'll limit the number of dev questions to a reasonable size
-    # Take the most recent questions (they're usually more varied)
-    dev_questions = (
-        dev_questions[-5000:] if len(dev_questions) > 5000 else dev_questions
-    )
-
     # Use goldset files for test dataset
     test_questions = []
     goldset_dir_path = Path(goldset_dir)
