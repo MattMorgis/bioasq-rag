@@ -181,3 +181,4 @@ cython_debug/
 data/abstracts/**/*.json
 data/failed_urls.json
 data/fetch_summary.json
+data/bioasq-12b-rag-dataset/data

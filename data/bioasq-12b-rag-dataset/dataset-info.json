@@ -1,0 +1,41 @@
+{
+  "name": "bioasq-12b-rag-dataset",
+  "version": "1.0.0",
+  "description": "BioASQ 12B dataset processed for RAG applications",
+  "splits": {
+    "corpus": {
+      "num_examples": 49513,
+      "file": "data/corpus.jsonl"
+    },
+    "dev": {
+      "num_examples": 5049,
+      "file": "data/dev.jsonl"
+    },
+    "test": {
+      "num_examples": 340,
+      "file": "data/test.jsonl"
+    }
+  },
+  "features": {
+    "corpus": [
+      "id",
+      "title",
+      "text",
+      "url",
+      "publication_date",
+      "journal",
+      "authors",
+      "doi",
+      "keywords",
+      "mesh_terms"
+    ],
+    "questions": [
+      "question_id",
+      "question",
+      "answer",
+      "relevant_passage_ids",
+      "type",
+      "snippets"
+    ]
+  }
+}
