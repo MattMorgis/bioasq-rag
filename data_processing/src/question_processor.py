@@ -102,7 +102,7 @@ def process_question_file(file_path: str) -> List[Dict[str, Any]]:
 
 
 def create_question_datasets(
-    training_file: str, goldset_dir: str, dev_output_path: str, test_output_path: str
+    training_file: str, goldset_dir: str, dev_output_path: str, eval_output_path: str
 ) -> tuple:
     """
     Process BioASQ questions and create dev and test datasets.
@@ -111,7 +111,7 @@ def create_question_datasets(
         training_file: Path to the training file
         goldset_dir: Directory containing goldset files
         dev_output_path: Path to write the dev JSONL file
-        test_output_path: Path to write the test JSONL file
+        eval_output_path: Path to write the eval JSONL file
 
     Returns:
         Tuple with the number of dev and test questions processed
@@ -120,11 +120,11 @@ def create_question_datasets(
     dev_questions = process_question_file(training_file)
 
     # Use goldset files for test dataset
-    test_questions = []
+    eval_questions = []
     goldset_dir_path = Path(goldset_dir)
 
     for goldset_file in goldset_dir_path.glob("*.json"):
-        test_questions.extend(process_question_file(str(goldset_file)))
+        eval_questions.extend(process_question_file(str(goldset_file)))
 
     # Write dev questions to JSONL file
     os.makedirs(os.path.dirname(dev_output_path), exist_ok=True)
@@ -133,16 +133,16 @@ def create_question_datasets(
             f.write(json.dumps(question) + "\n")
 
     # Write test questions to JSONL file
-    os.makedirs(os.path.dirname(test_output_path), exist_ok=True)
-    with open(test_output_path, "w", encoding="utf-8") as f:
-        for question in test_questions:
+    os.makedirs(os.path.dirname(eval_output_path), exist_ok=True)
+    with open(eval_output_path, "w", encoding="utf-8") as f:
+        for question in eval_questions:
             f.write(json.dumps(question) + "\n")
 
     logger.info(
         f"Dev dataset created with {len(dev_questions)} questions at {dev_output_path}"
     )
     logger.info(
-        f"Test dataset created with {len(test_questions)} questions at {test_output_path}"
+        f"Eval dataset created with {len(eval_questions)} questions at {eval_output_path}"
     )
 
-    return len(dev_questions), len(test_questions)
+    return len(dev_questions), len(eval_questions)

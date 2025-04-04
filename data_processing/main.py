@@ -4,7 +4,6 @@ import os
 
 from src.corpus_processor import create_corpus
 from src.dataset_utils import (
-    create_dataset_metadata,
     validate_dataset,
 )
 from src.question_processor import create_question_datasets
@@ -66,17 +65,13 @@ def main():
 
     # Process and create question datasets
     dev_path = os.path.join(args.output_dir, "data/dev.jsonl")
-    test_path = os.path.join(args.output_dir, "data/test.jsonl")
+    eval_path = os.path.join(args.output_dir, "data/eval.jsonl")
     logger.info(
         f"Creating question datasets from {args.training_file} and {args.goldset_dir}"
     )
-    dev_count, test_count = create_question_datasets(
-        args.training_file, args.goldset_dir, dev_path, test_path
+    dev_count, eval_count = create_question_datasets(
+        args.training_file, args.goldset_dir, dev_path, eval_path
     )
-
-    # Create dataset metadata
-    logger.info("Creating dataset metadata")
-    create_dataset_metadata(args.output_dir, corpus_count, dev_count, test_count)
 
     # Validate dataset
     logger.info("Validating dataset")
@@ -84,7 +79,7 @@ def main():
         logger.info(f"Dataset successfully created at {args.output_dir}")
         logger.info(f"Corpus: {corpus_count} abstracts")
         logger.info(f"Dev questions: {dev_count} questions")
-        logger.info(f"Test questions: {test_count} questions")
+        logger.info(f"Eval questions: {eval_count} questions")
     else:
         logger.error("Dataset validation failed")
 

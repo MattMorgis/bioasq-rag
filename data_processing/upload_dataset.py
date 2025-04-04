@@ -21,7 +21,7 @@ files_to_upload = [
     os.path.join(DATASET_DIR, ".gitattributes"),
     os.path.join(DATASET_DIR, "data/corpus.jsonl"),
     os.path.join(DATASET_DIR, "data/dev.jsonl"),
-    os.path.join(DATASET_DIR, "data/test.jsonl"),
+    os.path.join(DATASET_DIR, "data/eval.jsonl"),
 ]
 
 # Create a list of (path_in_repo, local_path) tuples

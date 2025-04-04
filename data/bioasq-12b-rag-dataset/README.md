@@ -7,7 +7,7 @@ configs:
       - split: dev
         path: "data/dev.jsonl"
       - split: eval
-        path: "data/test.jsonl"
+        path: "data/eval.jsonl"
 language:
   - en
 license: cc-by-nc-sa-4.0
@@ -66,7 +66,7 @@ The dataset contains three main components:
      - `type`: Question type (e.g., factoid, list, yes/no, summary)
      - `snippets`: Relevant snippets from abstracts
 
-3. **Eval Questions** (`data/test.jsonl`): Eval set of biomedical questions.
+3. **Eval Questions** (`data/eval.jsonl`): Eval set of biomedical questions.
    - Same structure as dev questions
 
 ## Usage
