@@ -22,13 +22,13 @@ data/bioasq-12b-rag-dataset/
 Run the script with default parameters:
 
 ```bash
-uv run main.py
+uv run data_processing/main.py
 ```
 
 Or specify custom paths:
 
 ```bash
-uv run main.py --abstracts_dir /path/to/abstracts --training_file /path/to/training.json --goldset_dir /path/to/goldset --output_dir /path/to/output
+uv run data_processing/main.py --abstracts_dir /path/to/abstracts --training_file /path/to/training.json --goldset_dir /path/to/goldset --output_dir /path/to/output
 ```
 
 ### Parameters
