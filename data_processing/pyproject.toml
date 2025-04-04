@@ -1,5 +1,5 @@
 [project]
-name = "data-processing"
+name = "bioasq-rag-data-processing"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
