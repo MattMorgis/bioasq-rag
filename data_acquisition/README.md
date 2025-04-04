@@ -117,6 +117,20 @@ To obtain an API key for higher rate limits:
 
 For more information, visit [the official NCBI documentation](https://ncbiinsights.ncbi.nlm.nih.gov/2017/11/02/new-api-keys-for-the-e-utilities/).
 
+### Using Environment Variables for API Key
+
+You can also configure your API key using environment variables:
+
+1. Copy the `.env-example` file to `.env` in the `data_acquisition` directory:
+   ```bash
+   cp data_acquisition/.env-example data_acquisition/.env
+   ```
+2. Edit the `.env` file and add your NCBI API key:
+   ```
+   NCBI_API_KEY=your_api_key_here
+   ```
+3. The scripts will automatically detect and use the API key from the `.env` file, so you don't need to pass it via command line arguments.
+
 ### Running Tests
 
 To run the unit tests for the data acquisition module:
