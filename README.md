@@ -32,6 +32,11 @@ The data processing module prepares BioASQ data into a structured format for RAG
 For details on how to use this module, see the [Data Processing README](data_processing/README.md).
 
 Final dataset can be found here: [huggingface.co/datasets/mattmorgis/bioasq-12b-rag](https://huggingface.co/datasets/mattmorgis/bioasq-12b-rag)
+There is an example script that demonstrates how to load the dataset from Hugging Face:
+
+```bash
+uv run data_processing/example/bioasq_demo.py
+```
 
 ## Development Setup
 

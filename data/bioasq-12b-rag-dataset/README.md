@@ -38,13 +38,16 @@ This dataset contains two distinct subsets specifically designed for RAG applica
 
 This structure makes it ideal for building and evaluating RAG systems that retrieve relevant biomedical information from a corpus and generate accurate, evidence-based answers to complex biomedical questions.
 
+The code to generate this dataset is here: https://github.com/MattMorgis/bioasq-rag
+
 ## Dataset Structure
 
 The dataset contains three main components:
 
 1. **Corpus** (`data/corpus.jsonl`): A collection of PubMed abstracts including metadata.
 
-   - Each line is a JSON object containing:
+   - The corpus is accessible through the "train" split of the "text-corpus" config
+   - Each document contains:
      - `id`: PubMed ID
      - `title`: Title of the paper
      - `text`: Abstract text
@@ -58,7 +61,8 @@ The dataset contains three main components:
 
 2. **Dev Questions** (`data/dev.jsonl`): Development set of biomedical questions.
 
-   - Each line is a JSON object containing:
+   - The dev questions are accessible through the "dev" split of the "question-answer-passages" config
+   - Each question contains:
      - `question_id`: Unique identifier for the question
      - `question`: The question text
      - `answer`: Ideal answer
@@ -67,7 +71,7 @@ The dataset contains three main components:
      - `snippets`: Relevant snippets from abstracts
 
 3. **Eval Questions** (`data/eval.jsonl`): Eval set of biomedical questions.
-   - Same structure as dev questions
+   - Same structure as dev questions, accessible through the "eval" split
 
 ## Usage
 
@@ -75,22 +79,25 @@ This dataset is designed for training and evaluating RAG systems for biomedical 
 
 ### Loading the Dataset
 
-You can load the dataset using the Hugging Face `datasets` library:
+You can load the dataset using the Hugging Face `datasets` library. **Note that you must specify a config name**:
 
 ```python
 from datasets import load_dataset
 
-# Load the entire dataset
-dataset = load_dataset("mattmorgis/bioasq-12b-rag-dataset")
+# Load the corpus of PubMed abstracts
+corpus_dataset = load_dataset("mattmorgis/bioasq-12b-rag", "text-corpus")
 
-# Access the corpus
-corpus = dataset["text-corpus"]
+# Load the question-answer dataset
+questions_dataset = load_dataset("mattmorgis/bioasq-12b-rag", "question-answer-passages")
+
+# Access the corpus data (note: the corpus is stored in the "train" split)
+corpus_docs = corpus_dataset["train"]
 
 # Access the development questions
-dev_questions = dataset["question-answer-passages"]["dev"]
+dev_questions = questions_dataset["dev"]
 
 # Access the eval questions
-eval_questions = dataset["question-answer-passages"]["eval"]
+eval_questions = questions_dataset["eval"]
 ```
 
 ### Example RAG Application

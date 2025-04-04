@@ -2,6 +2,11 @@
 
 This module processes BioASQ data into a structured format for RAG applications and prepares it for publication on Hugging Face.
 
+## Published Dataset
+
+The processed dataset is available on Hugging Face:
+[mattmorgis/bioasq-12b-rag](https://huggingface.co/datasets/mattmorgis/bioasq-12b-rag)
+
 ## Dataset Structure
 
 The processed dataset will be created with the following structure:
@@ -65,3 +70,17 @@ Each line is a JSON object with:
 - `relevant_passage_ids`: List of PubMed IDs for relevant abstracts
 - `type`: Question type (e.g., factoid, list, yes/no, summary)
 - `snippets`: Relevant snippets from abstracts
+
+## Example Dataset Usage
+
+There is an example script that demonstrates how to load the dataset from Hugging Face:
+
+```bash
+uv run data_processing/example/bioasq_demo.py
+```
+
+The script includes all required dependencies in script headers and shows:
+
+- How to load the dataset from Hugging Face
+- Basic dataset statistics (corpus size, number of questions)
+- Sample document and question data structure

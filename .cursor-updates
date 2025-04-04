@@ -16,3 +16,5 @@
 - Created retry_failed.py script with tests to recover the remaining failed PubMed abstract URLs with more conservative rate limiting
 - Renamed src/data_pipelines to src/data_collection for clarity
 - Created data processing module for generating BioASQ dataset for Hugging Face
+- Created bioasq_demo.py script to demonstrate loading and using the published Hugging Face dataset with a TF-IDF retrieval example
+- Fixed dataset usage documentation in README files to correctly handle the nested dataset structure
