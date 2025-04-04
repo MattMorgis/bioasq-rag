@@ -1,4 +1,13 @@
 ---
+configs:
+  - config_name: text-corpus
+    data_files: "data/corpus.jsonl"
+  - config_name: question-answer-passages
+    data_files:
+      - split: dev
+        path: "data/dev.jsonl"
+      - split: eval
+        path: "data/test.jsonl"
 language:
   - en
 license: cc-by-nc-sa-4.0
@@ -21,7 +30,13 @@ pretty_name: BioASQ 12B RAG Dataset
 
 A processed version of the BioASQ 12B dataset optimized for Retrieval-Augmented Generation (RAG) applications in biomedical question answering.
 
-This dataset provides a structured collection of biomedical questions paired with relevant PubMed abstracts and gold standard answers. It is specifically formatted for RAG pipelines, making it ideal for training and evaluating systems that need to retrieve relevant biomedical information from a corpus and generate accurate, evidence-based answers to complex biomedical questions.
+This dataset contains two distinct subsets specifically designed for RAG applications:
+
+1. **A text corpus of PubMed abstracts** ready for indexing and retrieval, containing detailed metadata and full abstract text.
+
+2. **An evaluation dataset** consisting of biomedical questions, each paired with an ideal answer and a list of passage IDs that are relevant to answering the question.
+
+This structure makes it ideal for building and evaluating RAG systems that retrieve relevant biomedical information from a corpus and generate accurate, evidence-based answers to complex biomedical questions.
 
 ## Dataset Structure
 
@@ -51,7 +66,7 @@ The dataset contains three main components:
      - `type`: Question type (e.g., factoid, list, yes/no, summary)
      - `snippets`: Relevant snippets from abstracts
 
-3. **Test Questions** (`data/test.jsonl`): Test set of biomedical questions.
+3. **Eval Questions** (`data/test.jsonl`): Eval set of biomedical questions.
    - Same structure as dev questions
 
 ## Usage
@@ -69,13 +84,13 @@ from datasets import load_dataset
 dataset = load_dataset("mattmorgis/bioasq-12b-rag-dataset")
 
 # Access the corpus
-corpus = dataset["corpus"]
+corpus = dataset["text-corpus"]
 
 # Access the development questions
-dev_questions = dataset["dev"]
+dev_questions = dataset["question-answer-passages"]["dev"]
 
-# Access the test questions
-test_questions = dataset["test"]
+# Access the eval questions
+eval_questions = dataset["question-answer-passages"]["eval"]
 ```
 
 ### Example RAG Application

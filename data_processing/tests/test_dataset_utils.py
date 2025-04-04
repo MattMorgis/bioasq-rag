@@ -2,39 +2,8 @@ import json
 import os
 
 from src.dataset_utils import (
-    create_dataset_metadata,
     validate_dataset,
 )
-
-
-def test_create_dataset_metadata(temp_output_dir):
-    """Test creating dataset metadata."""
-    # Create dataset metadata
-    create_dataset_metadata(temp_output_dir, 100, 50, 25)
-
-    # Check that the metadata file exists
-    metadata_path = os.path.join(temp_output_dir, "dataset-info.json")
-    assert os.path.exists(metadata_path)
-
-    # Check the content of the metadata file
-    with open(metadata_path, "r", encoding="utf-8") as f:
-        metadata = json.load(f)
-
-        # Check the metadata structure
-        assert metadata["name"] == "bioasq-12b-rag-dataset"
-        assert metadata["version"] == "1.0.0"
-        assert "description" in metadata
-
-        # Check the split information
-        assert metadata["splits"]["corpus"]["num_examples"] == 100
-        assert metadata["splits"]["dev"]["num_examples"] == 50
-        assert metadata["splits"]["test"]["num_examples"] == 25
-
-        # Check the feature information
-        assert "corpus" in metadata["features"]
-        assert "questions" in metadata["features"]
-        assert len(metadata["features"]["corpus"]) > 0
-        assert len(metadata["features"]["questions"]) > 0
 
 
 def test_validate_dataset_success(temp_output_dir):
