@@ -1,46 +1,49 @@
 # BioASQ RAG
 
-## Data Pipelines
+A Retrieval-Augmented Generation (RAG) system built on the BioASQ dataset for biomedical question answering.
 
-### Fetching PubMed Abstracts
+## Project Overview
 
-The system includes a data fetcher that can download thousands of PubMed abstracts in parallel while respecting rate limits. The fetcher uses the PubMedURLCollector to gather URLs from the BioASQ dataset and then downloads abstracts for each URL.
+This project implements a RAG-based approach to biomedical question answering using the BioASQ dataset. The system retrieves relevant PubMed abstracts for a given biomedical question and generates accurate, evidence-based answers.
 
-To run the fetcher:
+## Project Structure
+
+The project is organized into modular components, each handling a specific part of the RAG pipeline:
+
+### [Data Acquisition](data_acquisition/README.md)
+
+The data acquisition module handles downloading and processing PubMed abstracts referenced in the BioASQ dataset:
+
+- Extracts PubMed URLs from BioASQ questions
+- Downloads abstracts using the NCBI E-utilities API
+- Processes and stores the abstracts for later use in the RAG pipeline
+
+For details on how to use this module, see the [Data Acquisition README](data_acquisition/README.md).
+
+## Development Setup
+
+This project uses `uv` for Python package management.
 
 ```bash
-# Basic usage
-uv run data_acquisition/main.py --email your.email@example.com
+# Install dependencies
+uv sync
 
-# Advanced usage with all parameters
-uv run data_acquisition/run.py \
-  --email your.email@example.com \
-  --api-key YOUR_NCBI_API_KEY \
-  --data-dir data \
-  --batch-size 100 \
-  --rate-limit 10 \
-  --max-retries 3 \
-  --retry-delay 5 \
-  --log-level INFO
+# Run commands in the project environment
+uv run <script.py>
+
+# Add dependencies
+uv add <package>
+
+# Add development dependencies
+uv add <package> --dev
 ```
 
-**Parameters:**
+## Running Tests
 
-- `--email` (required): Your email address for the NCBI API
-- `--api-key`: NCBI API key for higher rate limits (optional but recommended)
-- `--data-dir`: Directory to save abstracts to (default: "data")
-- `--batch-size`: Number of abstracts to fetch in parallel per batch (default: 100)
-- `--rate-limit`: Maximum requests per minute (default: 10, use 3 without API key)
-- `--max-retries`: Maximum retries for failed requests (default: 3)
-- `--retry-delay`: Delay in seconds between retries (default: 5)
-- `--log-level`: Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL)
+```bash
+# Run all tests
+uv run pytest
 
-The fetcher will:
-
-1. Collect all unique PubMed URLs from the BioASQ dataset, both training and gold sets.
-2. Download abstracts in parallel batches while respecting rate limits
-3. Handle retries for rate limit errors
-4. Skip abstracts that have already been downloaded
-5. Save abstracts as JSON files in the `data/abstracts` directory
-
-Fetching all ~50,000 abstracts should take 1.5~ hours with the rate limit of 10 per second.
+# Run tests for a specific module
+uv run pytest <module_directory>
+```
