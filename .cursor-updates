@@ -15,3 +15,4 @@
 - Added centralized logging utility for consistent logging to both console and file across all modules with configurable log levels
 - Created retry_failed.py script with tests to recover the remaining failed PubMed abstract URLs with more conservative rate limiting
 - Renamed src/data_pipelines to src/data_collection for clarity
+- Created data processing module for generating BioASQ dataset for Hugging Face

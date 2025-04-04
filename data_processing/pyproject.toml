@@ -1,10 +1,13 @@
 [project]
 name = "bioasq-rag-data-processing"
 version = "0.1.0"
-description = "Add your description here"
+description = "Dataset processing module for BioASQ RAG project"
 readme = "README.md"
 requires-python = ">=3.11"
-dependencies = []
+dependencies = [
+    "pathlib>=1.0.1",
+    "typing-extensions>=4.9.0"
+]
 
 
 [tool.pytest.ini_options]
