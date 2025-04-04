@@ -178,7 +178,7 @@ cython_debug/
 **/.DS_Store
 
 # BioASQ dataset
-data/abstracts/**/*.json
+data/abstracts/
 data/failed_urls.json
 data/fetch_summary.json
 data/bioasq-12b-rag-dataset/data
