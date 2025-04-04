@@ -1,8 +1,17 @@
 ### Project Overview
 
-This is a Python-based RAG demo using the BioASQ dataset.
+This is a Python-based RAG demo using the BioASQ dataset for biomedical question answering. The system retrieves relevant PubMed abstracts for a given biomedical question and generates accurate, evidence-based answers.
 
-###
+### Project Structure
+
+The project is organized into modular components, each handling a specific part of the RAG pipeline:
+
+1. **Data Acquisition**: Handles downloading and processing PubMed abstracts referenced in the BioASQ dataset
+   - Extracts PubMed URLs from BioASQ questions
+   - Downloads abstracts using the NCBI E-utilities API
+   - Processes and stores the abstracts for later use in the RAG pipeline
+
+### Package Management
 
 This project uses `uv` for project management.
 
@@ -12,8 +21,16 @@ This project uses `uv` for project management.
 `uv sync`: Sync the project's dependencies with the environment.
 `uv lock`: Create a lockfile for the project's dependencies.
 `uv run`: Run a command in the project environment.
-Example: `uv run src/data_collection/run.py`
+Example: `uv run data_acquisition/main.py --email your.email@example.com`
 `uv tree`: View the dependency tree for the project.
+
+### Running Tests
+
+# Run tests for a specific module
+
+uv run pytest <module_directory>
+
+````
 
 ### Test Fixtures
 
@@ -38,7 +55,10 @@ IMPORTANT:
 
 2. After ALL code changes:
 
-   - Run `uv run pytest` to verify changes
+   - Run tests for the specific module you modified:
+     ```
+     uv run pytest <module_directory>
+     ```
    - Fix any test errors (warnings can be ignored)
    - If tests pass, proceed with commit
    - If tests fail, fix issues and rerun tests
@@ -57,8 +77,12 @@ IMPORTANT:
    - Keep functions focused and small
 
 5. After completing ANY task:
-   - Run tests with `uv run pytest`
+   - Run tests for the specific module you worked on:
+     ```
+     uv run pytest <module_directory>
+     ```
    - Add a one-line summary to .cursor-updates in markdown
    - Report test status to user
 
-If you forget, the user can type the command "finish" and you will run the tests and update `.cursor-updates`.
+If you forget, the user can type the command "finish" and you will run the tests for the appropriate module and update `.cursor-updates`.
+````
