@@ -5,12 +5,12 @@ import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set
 
-from src.data_collection.clients.pubmed_client import (
+from src.clients.pubmed_client import (
     PubMedClient,
     PubMedClientError,
     PubMedRateLimitError,
 )
-from src.data_collection.pubmed_url_collector import PubMedURLCollector
+from src.pubmed_url_collector import PubMedURLCollector
 
 
 class DataFetcher:

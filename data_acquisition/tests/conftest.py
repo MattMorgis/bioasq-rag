@@ -5,7 +5,7 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-from src.data_collection.clients.pubmed_client import PubMedClient
+from src.clients.pubmed_client import PubMedClient
 
 
 @pytest.fixture

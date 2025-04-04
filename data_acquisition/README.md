@@ -1,6 +1,4 @@
-# BioASQ RAG
-
-## Data Pipelines
+# BioASQ 12b RAG Data Acquisition
 
 ### Fetching PubMed Abstracts
 

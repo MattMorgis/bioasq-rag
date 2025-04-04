@@ -2,10 +2,21 @@ version = 1
 revision = 1
 requires-python = ">=3.11"
 
+[manifest]
+members = [
+    "bioasq-rag",
+    "bioasq-rag-data-acquisition",
+]
+
 [[package]]
 name = "bioasq-rag"
 version = "0.1.0"
-source = { editable = "." }
+source = { virtual = "." }
+
+[[package]]
+name = "bioasq-rag-data-acquisition"
+version = "0.1.0"
+source = { virtual = "data_acquisition" }
 dependencies = [
     { name = "biopython" },
     { name = "python-dotenv" },

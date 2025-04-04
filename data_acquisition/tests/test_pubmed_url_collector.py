@@ -7,7 +7,7 @@ from unittest.mock import mock_open, patch
 
 import pytest
 
-from src.data_collection.pubmed_url_collector import PubMedURLCollector
+from src.pubmed_url_collector import PubMedURLCollector
 
 
 @pytest.fixture

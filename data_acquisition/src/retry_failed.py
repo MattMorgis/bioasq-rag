@@ -9,9 +9,9 @@ from typing import List, Optional, Set
 
 from dotenv import load_dotenv
 
-from src.data_collection.clients.biopython_pubmed_client import BioPythonPubMedClient
-from src.data_collection.data_fetcher import DataFetcher
-from src.data_collection.utils.logging_utils import setup_logging
+from src.clients.biopython_pubmed_client import BioPythonPubMedClient
+from src.data_fetcher import DataFetcher
+from src.utils.logging_utils import setup_logging
 
 
 async def retry_failed_urls(

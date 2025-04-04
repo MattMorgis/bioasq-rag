@@ -4,8 +4,8 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from src.data_collection.clients.biopython_pubmed_client import BioPythonPubMedClient
-from src.data_collection.clients.pubmed_client import (
+from src.clients.biopython_pubmed_client import BioPythonPubMedClient
+from src.clients.pubmed_client import (
     PubMedClientError,
     PubMedRateLimitError,
 )
