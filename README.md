@@ -20,6 +20,18 @@ The data acquisition module handles downloading and processing PubMed abstracts 
 
 For details on how to use this module, see the [Data Acquisition README](data_acquisition/README.md).
 
+### [Data Processing](data_processing/README.md)
+
+The data processing module prepares BioASQ data into a structured format for RAG applications:
+
+- Creates a corpus of PubMed abstracts in JSONL format
+- Processes BioASQ questions into development and test datasets
+- Prepares the dataset structure for publication on Hugging Face
+- Includes validation and metadata creation for the final dataset
+
+For details on how to use this module, see the [Data Processing README](data_processing/README.md).
+Final dataset can be found here: [huggingface.co/datasets/mattmorgis/bioasq-12b-rag](https://huggingface.co/datasets/mattmorgis/bioasq-12b-rag)
+
 ## Development Setup
 
 This project uses `uv` for Python package management.
