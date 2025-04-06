@@ -1,0 +1,21 @@
+[project]
+name = "bioasq-rag-data-acquisition"
+version = "0.1.0"
+description = "Creates a dataset of PubMed abstracts for BioASQ RAG"
+readme = "README.md"
+requires-python = ">=3.11"
+
+dependencies = [
+    "biopython>=1.85",
+    "python-dotenv>=1.0.0",
+]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+pythonpath = ["."]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3.5",
+    "pytest-asyncio>=0.26.0",
+]

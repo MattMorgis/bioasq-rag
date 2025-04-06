@@ -1,0 +1,17 @@
+[project]
+name = "bioasq-rag"
+version = "0.1.0"
+requires-python = ">=3.11"
+description = "RAG system for BioASQ"
+dependencies = [
+]
+
+[tool.uv.workspace]
+members = ["data_acquisition", "data_processing", "indexing_pipeline"]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3.5",
+]
+
+
