@@ -184,3 +184,6 @@ data/fetch_summary.json
 data/bioasq-12b-rag-dataset/data
 data/BioASQ-12b/training/*.json
 data/BioASQ-12b/goldset/*.json
+
+# Qdrant
+db/data/
