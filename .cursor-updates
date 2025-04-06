@@ -23,3 +23,4 @@
 - Refactored PubMedChunk and PubMedEmbeddedChunk to use composition-based approach, improving code organization and reducing data duplication
 - Completed SentenceTransformerEmbedder implementation and tests
 - Added DataLoader implementation and tests to load PubMed abstracts from JSONL files with batching and limit capabilities
+- Added comprehensive unit tests for Pipeline class to ensure proper chunking and embedding of PubMed abstracts
