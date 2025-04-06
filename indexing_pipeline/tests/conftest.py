@@ -32,11 +32,11 @@ def temp_corpus_file(sample_pubmed_abstract) -> Generator[Path, None, None]:
         # Write 5 sample abstracts to the temp file
         for i in range(5):
             abstract_dict = {
-                "pmid": f"{123456 + i}",
+                "id": f"{123456 + i}",
                 "title": f"Sample Medical Abstract {i + 1}",
-                "abstract": f"This is sample abstract {i + 1} about a medical topic.",
+                "text": f"This is sample abstract {i + 1} about a medical topic.",
                 "url": f"https://www.ncbi.nlm.nih.gov/pubmed/{123456 + i}",
-                "pub_date": "2023-01-15",
+                "publication_date": "2023-01-15",
                 "journal": "Journal of Medical Testing",
                 "authors": ["Smith, J", "Johnson, A"],
                 "keywords": ["testing", "embeddings"],
