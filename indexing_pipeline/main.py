@@ -37,9 +37,10 @@ def main():
             print("\nSample Embedded Chunk:")
             print(f"  Document ID: {first_embedded_chunk.chunk.abstract.url}")
             print(f"  Chunk ID: {first_embedded_chunk.chunk.chunk_id}")
+            print(f"  Journal: {first_embedded_chunk.chunk.abstract.journal}")
             print(f"  Title: {first_embedded_chunk.chunk.abstract.title}")
             print(f"  Text: {first_embedded_chunk.chunk.text}")
-            print(f"  Embedding shape: {first_embedded_chunk.embedding}")
+            print(f"  Embedding shape: {len(first_embedded_chunk.embedding)}")
             print(f"  Embedding model: {first_embedded_chunk.embedding_model}")
 
     # Example: Configure for larger scale processing
