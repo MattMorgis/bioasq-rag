@@ -24,3 +24,4 @@
 - Completed SentenceTransformerEmbedder implementation and tests
 - Added DataLoader implementation and tests to load PubMed abstracts from JSONL files with batching and limit capabilities
 - Added comprehensive unit tests for Pipeline class to ensure proper chunking and embedding of PubMed abstracts
+- Add Qdrant indexing support and comprehensive unit tests with mocking
