@@ -11,6 +11,28 @@ The project is organized into modular components, each handling a specific part 
    - Downloads abstracts using the NCBI E-utilities API
    - Processes and stores the abstracts for later use in the RAG pipeline
 
+### Module Structure and Imports
+
+Each module follows a consistent structure:
+
+```
+module_name/
+├── main.py           # Entry point for the module
+├── models/           # Data models
+├── src/              # Source code
+│   ├── routes.py     # API routes
+│   └── ...           # Other module-specific code
+└── tests/            # Tests for the module
+```
+
+Import rules:
+
+1. DO NOT use absolute imports that reference the project name (e.g., `from project_name.module.file`)
+2. Use relative imports from the module's root directory (e.g., `from src.models import Model`)
+3. Main module files should import from `src` directly (e.g., `from src.routes import router`)
+4. Files in `src` should import models using `from models import Model`
+5. NO **init**.py FILES should be created to enforce these import patterns
+
 ### Package Management
 
 This project uses `uv` for project management.
