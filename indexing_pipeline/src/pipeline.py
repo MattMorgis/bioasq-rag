@@ -43,7 +43,11 @@ class Pipeline:
         self.chunker = chunker
         self.embedder = embedder
         self.indexer = indexer
-        self.steps = steps or {PipelineStep.CHUNK, PipelineStep.EMBED}
+        self.steps = steps or {
+            PipelineStep.CHUNK,
+            PipelineStep.EMBED,
+            PipelineStep.INDEX,
+        }
 
         # Add INDEX step if indexer is provided and steps not explicitly set
         if indexer and not steps:
