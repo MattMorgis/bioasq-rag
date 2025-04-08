@@ -30,7 +30,7 @@ def main():
 
     logger.info("Initializing Qdrant vector database...")
     indexer = QdrantIndexer(host="localhost", port=6333, grpc_port=6334)
-    indexer.initialize("bioasq-12b-rag-all-MiniLM-L12-v2-200w-20o", 384)
+    indexer.initialize("pubmed-all-MiniLM-L12-v2-200w-20o", 384)
     logger.info("Vector database initialized successfully")
 
     # Create pipeline with all steps
