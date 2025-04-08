@@ -7,7 +7,7 @@ dependencies = [
 ]
 
 [tool.uv.workspace]
-members = ["data_acquisition", "data_processing", "indexing_pipeline"]
+members = ["data_acquisition", "data_processing", "indexing_pipeline", "search"]
 
 [dependency-groups]
 dev = [
