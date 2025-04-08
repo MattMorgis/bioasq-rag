@@ -1,4 +1,5 @@
 import unittest
+import uuid
 from unittest.mock import MagicMock, patch
 
 import numpy as np
@@ -119,17 +120,25 @@ class TestQdrantIndexer(unittest.TestCase):
         points = kwargs["points"]
         self.assertEqual(len(points), 1)
 
-        # Verify the point has correct ID and vector
+        # Verify the point structure
         point = points[0]
-        self.assertEqual(point.id, "123456-1")
+
+        # Verify the point ID is a valid UUID
+        try:
+            uuid.UUID(str(point.id))
+        except ValueError:
+            self.fail("Point ID is not a valid UUID")
 
         # Check vector values (should be same as the test embedding)
         if hasattr(point, "vector"):
             self.assertTrue(np.array_equal(np.array(point.vector), self.test_embedding))
 
-        # Check payload contains essential fields
+        # Check payload contains essential fields and the original chunk_id
         if hasattr(point, "payload"):
             payload = point.payload
+            self.assertEqual(
+                payload["chunk_id"], "123456-1"
+            )  # Original chunk_id preserved in payload
             self.assertEqual(payload["abstract_id"], "123456")
             self.assertEqual(payload["title"], "Test Medical Paper")
             self.assertEqual(payload["journal"], "Journal of Testing")

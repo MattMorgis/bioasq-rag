@@ -1,3 +1,4 @@
+import uuid
 from typing import Any, Dict, List, Union
 
 import numpy as np
@@ -97,14 +98,14 @@ class QdrantIndexer(Indexer):
             if isinstance(vector, np.ndarray):
                 vector = vector.tolist()
 
-            # Use chunk ID for this entry
-            chunk_id = chunk.chunk.chunk_id
+            # Generate a UUID for the point ID
+            point_id = str(uuid.uuid4())
 
             # Prepare payload with metadata
             abstract = chunk.chunk.abstract
             payload = {
                 # Chunk metadata
-                "chunk_id": chunk.chunk.chunk_id,
+                "chunk_id": chunk.chunk.chunk_id,  # Store original chunk_id in payload
                 "text": chunk.chunk.text,
                 # Abstract metadata
                 "abstract_id": abstract.id,
@@ -122,8 +123,8 @@ class QdrantIndexer(Indexer):
                 **chunk.chunk.metadata,
             }
 
-            # Add point
-            points.append(rest.PointStruct(id=chunk_id, vector=vector, payload=payload))
+            # Add point using UUID as the point ID
+            points.append(rest.PointStruct(id=point_id, vector=vector, payload=payload))
 
         # Execute batch insert
         self.client.upsert(collection_name=self._index_name, points=points)
