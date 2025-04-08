@@ -8,6 +8,7 @@ dependencies = [
     "accelerate>=1.6.0",
     "haystack-ai>=2.12.0",
     "nltk>=3.9.1",
+    "qdrant-client>=1.13.3",
     "sentence-transformers>=4.0.2",
 ]
 
