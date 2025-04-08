@@ -24,10 +24,10 @@ with patch("qdrant_client.QdrantClient") as MockQdrantClient:
 client = TestClient(app)
 
 
-def test_search_endpoint():
+def test_vector_search_endpoint():
     """Test the search endpoint with mocked Qdrant client but real transformer."""
     # Make a request to the search endpoint
-    response = client.get("/search?query=test+query&limit=5")
+    response = client.get("/search/vector?query=test+query&limit=5")
 
     # Print error response for debugging
     if response.status_code != 200:
@@ -56,11 +56,11 @@ def test_search_endpoint():
     assert result["journal"] == "Test Journal"
 
 
-def test_search_error_handling():
+def test_vector_search_error_handling():
     """Test error handling in the search endpoint."""
     # Mock an exception in the search
-    with patch("main.qdrant_client.search", side_effect=Exception("Test error")):
-        response = client.get("/search?query=error+test")
+    with patch("src.routes.qdrant_client.search", side_effect=Exception("Test error")):
+        response = client.get("/search/vector?query=error+test")
 
         # Check that we get a 500 error
         assert response.status_code == 500

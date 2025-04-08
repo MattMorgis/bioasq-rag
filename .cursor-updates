@@ -26,3 +26,4 @@
 - Added comprehensive unit tests for Pipeline class to ensure proper chunking and embedding of PubMed abstracts
 - Add Qdrant indexing support and comprehensive unit tests with mocking
 - Added indexing functionality to the pipeline with Qdrant integration, including tests and validation for step dependencies.
+- Refactored search module by moving models to src/models, routes to src/routes.py, and configuring Qdrant parameters as environment variables
