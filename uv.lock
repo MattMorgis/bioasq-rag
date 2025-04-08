@@ -1687,14 +1687,41 @@ name = "search"
 version = "0.1.0"
 source = { virtual = "search" }
 dependencies = [
+    { name = "accelerate" },
     { name = "fastapi", extra = ["standard"] },
     { name = "pydantic" },
+    { name = "qdrant-client" },
+    { name = "sentence-transformers" },
+]
+
+[package.optional-dependencies]
+dev = [
+    { name = "httpx" },
+    { name = "pytest" },
+]
+
+[package.dev-dependencies]
+dev = [
+    { name = "httpx" },
+    { name = "pytest" },
 ]
 
 [package.metadata]
 requires-dist = [
+    { name = "accelerate", specifier = ">=1.6.0" },
     { name = "fastapi", extras = ["standard"], specifier = ">=0.115.12" },
+    { name = "httpx", marker = "extra == 'dev'", specifier = ">=0.25.0" },
     { name = "pydantic", specifier = ">=2.11.2" },
+    { name = "pytest", marker = "extra == 'dev'", specifier = ">=7.4.0" },
+    { name = "qdrant-client", specifier = ">=1.7.0" },
+    { name = "sentence-transformers", specifier = ">=2.2.2" },
+]
+provides-extras = ["dev"]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "httpx", specifier = ">=0.28.1" },
+    { name = "pytest", specifier = ">=8.3.5" },
 ]
 
 [[package]]
