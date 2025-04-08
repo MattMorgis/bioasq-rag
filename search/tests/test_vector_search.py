@@ -25,17 +25,17 @@ search_result = SearchResult(
 @pytest.fixture(autouse=True)
 def mock_dependencies():
     """Mock all external dependencies for all tests."""
-    # Create a mock for search_client
-    mock_client = MagicMock()
-    mock_client.search.return_value = [search_result]
+    # Create a mock for vector_search_use_case
+    mock_use_case = MagicMock()
+    mock_use_case.run.return_value = [search_result]
 
     # Apply the patch for the duration of the test
-    with patch("src.routes.search_client", mock_client):
+    with patch("src.routes.vector_search_use_case", mock_use_case):
         yield
 
 
 def test_vector_search_endpoint():
-    """Test the search endpoint with mocked search client."""
+    """Test the search endpoint with mocked vector search use case."""
     # Make a request to the search endpoint
     response = client.get("/search/vector?query=test+query&limit=5")
 
@@ -67,7 +67,9 @@ def test_vector_search_endpoint():
 def test_vector_search_error_handling():
     """Test error handling in the search endpoint."""
     # Override the mock for this specific test
-    with patch("src.routes.search_client.search", side_effect=Exception("Test error")):
+    with patch(
+        "src.routes.vector_search_use_case.run", side_effect=Exception("Test error")
+    ):
         response = client.get("/search/vector?query=error+test")
 
         # Check that we get a 500 error
@@ -81,7 +83,7 @@ def test_qdrant_connection_error_handling():
     """Test handling of Qdrant connection errors."""
     # Override the mock for this specific test
     with patch(
-        "src.routes.search_client.search",
+        "src.routes.vector_search_use_case.run",
         side_effect=QdrantConnectionError("Qdrant server unavailable"),
     ):
         response = client.get("/search/vector?query=connection+error+test")
