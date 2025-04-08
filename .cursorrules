@@ -28,10 +28,10 @@ module_name/
 Import rules:
 
 1. DO NOT use absolute imports that reference the project name (e.g., `from project_name.module.file`)
-2. Use relative imports from the module's root directory (e.g., `from src.models import Model`)
-3. Main module files should import from `src` directly (e.g., `from src.routes import router`)
-4. Files in `src` should import models using `from models import Model`
-5. NO **init**.py FILES should be created to enforce these import patterns
+2. Use absolute imports from the module's root directory
+   - If you are in `indexing_pipeline/src/client/some_client.py` and want to import `indexing_pipeline/src/models/some_model.py`, use `from src.models.some_model import X`
+   - Imports should always be absolute paths starting from the module directory, not the project root
+3. NO **init**.py FILES should be created to enforce these import patterns
 
 ### Package Management
 
