@@ -15,7 +15,7 @@ uv sync
 Start the FastAPI development server:
 
 ```bash
-uv run uvicorn main:app --reload
+uv run fastapi dev main.py
 ```
 
 The server will start at `http://localhost:8000`.

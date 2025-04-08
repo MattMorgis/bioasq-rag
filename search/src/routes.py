@@ -1,6 +1,6 @@
 from dotenv import load_dotenv
 from fastapi import APIRouter, HTTPException, Query
-from src.clients.qdrant_client import QdrantSearchClient
+from src.clients.qdrant_client import QdrantConnectionError, QdrantSearchClient
 from src.models.models import SearchResponse
 
 # Load environment variables
@@ -29,5 +29,10 @@ async def search(
 
         return SearchResponse(results=results, query=query, total_results=len(results))
 
+    except QdrantConnectionError:
+        raise HTTPException(
+            status_code=503,
+            detail="Vector search service is currently unavailable. Please try again later.",
+        )
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Search error: {str(e)}")

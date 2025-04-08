@@ -1,10 +1,17 @@
 import os
+import socket
 from typing import List, Optional
 
 from qdrant_client import QdrantClient as OriginalQdrantClient
 from sentence_transformers import SentenceTransformer
 from src.clients.search_client import SearchClient
 from src.models.models import SearchResult
+
+
+class QdrantConnectionError(Exception):
+    """Exception raised when there are issues with Qdrant operations."""
+
+    pass
 
 
 class QdrantSearchClient(SearchClient):
@@ -44,17 +51,28 @@ class QdrantSearchClient(SearchClient):
 
         Returns:
             List of search results
+
+        Raises:
+            QdrantConnectionError: If there are any issues with Qdrant operations
         """
         # Convert query to embedding vector
         query_vector = self.model.encode(query).tolist()
 
         # Search in Qdrant
-        search_results = self.client.search(
-            collection_name=self.collection_name,
-            query_vector=query_vector,
-            limit=limit,
-            with_payload=True,
-        )
+        try:
+            search_results = self.client.search(
+                collection_name=self.collection_name,
+                query_vector=query_vector,
+                limit=limit,
+                with_payload=True,
+            )
+        except Exception as e:
+            error_msg = str(e)
+            if isinstance(e, (socket.error, ConnectionError, ConnectionRefusedError)):
+                error_msg = f"Unable to connect to Qdrant server at {self.host}:{self.port}: {error_msg}"
+            else:
+                error_msg = f"Qdrant search operation failed: {error_msg}"
+            raise QdrantConnectionError(error_msg)
 
         # Process and format results
         formatted_results = []
