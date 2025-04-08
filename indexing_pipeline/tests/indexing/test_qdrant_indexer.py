@@ -4,7 +4,7 @@ from unittest.mock import MagicMock, patch
 
 import numpy as np
 from src.indexing.qdrant_indexer import QdrantIndexer
-from src.models.pubmed import PubMedAbstract, PubMedChunk, PubMedEmbeddedChunk
+from src.models.pubmed import Document, DocumentChunk, EmbeddedDocumentChunk
 
 
 class TestQdrantIndexer(unittest.TestCase):
@@ -21,7 +21,7 @@ class TestQdrantIndexer(unittest.TestCase):
         self.indexer.client = MagicMock()
 
         # Set up test data
-        self.test_abstract = PubMedAbstract(
+        self.test_abstract = Document(
             id="123456",
             title="Test Medical Paper",
             text="This is a test abstract for a medical paper about testing.",
@@ -34,10 +34,10 @@ class TestQdrantIndexer(unittest.TestCase):
             doi="10.1234/test.123456",
         )
 
-        self.test_chunk = PubMedChunk(
+        self.test_chunk = DocumentChunk(
             chunk_id="123456-1",
             text="This is a test abstract for a medical paper about testing.",
-            abstract=self.test_abstract,
+            document=self.test_abstract,
             metadata={"position": 0, "is_title": False},
         )
 
@@ -45,7 +45,7 @@ class TestQdrantIndexer(unittest.TestCase):
             np.float32
         )  # Typical embedding dimension
 
-        self.test_embedded_chunk = PubMedEmbeddedChunk(
+        self.test_embedded_chunk = EmbeddedDocumentChunk(
             chunk=self.test_chunk,
             embedding=self.test_embedding,
             embedding_model="test-model",
@@ -99,7 +99,7 @@ class TestQdrantIndexer(unittest.TestCase):
         self.assertEqual(self.indexer._dimension, 768)
 
     def test_add_chunks_converts_and_inserts_correctly(self):
-        """Test that add_chunks correctly converts PubMedEmbeddedChunks to Qdrant points."""
+        """Test that add_chunks correctly converts EmbeddedDocumentChunks to Qdrant points."""
         # Initialize the indexer
         self.indexer._index_name = "test-index"
         self.indexer._dimension = 768
@@ -139,7 +139,7 @@ class TestQdrantIndexer(unittest.TestCase):
             self.assertEqual(
                 payload["chunk_id"], "123456-1"
             )  # Original chunk_id preserved in payload
-            self.assertEqual(payload["abstract_id"], "123456")
+            self.assertEqual(payload["document_id"], "123456")
             self.assertEqual(payload["title"], "Test Medical Paper")
             self.assertEqual(payload["journal"], "Journal of Testing")
             self.assertEqual(payload["embedding_model"], "test-model")

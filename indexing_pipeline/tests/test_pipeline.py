@@ -4,7 +4,7 @@ import pytest
 from src.chunker.chunker import AbstractChunker
 from src.embedding.embedder import Embedder
 from src.indexing.indexer import Indexer
-from src.models.pubmed import PubMedAbstract, PubMedChunk, PubMedEmbeddedChunk
+from src.models.pubmed import Document, DocumentChunk, EmbeddedDocumentChunk
 from src.pipeline import Pipeline, PipelineStep
 
 
@@ -16,15 +16,15 @@ def mock_chunker():
     # Configure the mock to return predefined chunks
     def chunk_abstract(abstract):
         return [
-            PubMedChunk(
+            DocumentChunk(
                 chunk_id=f"{abstract.id}-1",
                 text="First chunk of test abstract",
-                abstract=abstract,
+                document=abstract,
             ),
-            PubMedChunk(
+            DocumentChunk(
                 chunk_id=f"{abstract.id}-2",
                 text="Second chunk of test abstract",
-                abstract=abstract,
+                document=abstract,
             ),
         ]
 
@@ -40,7 +40,7 @@ def mock_embedder():
     # Configure the mock to return predefined embedded chunks
     def embed_batch(chunks):
         return [
-            PubMedEmbeddedChunk(
+            EmbeddedDocumentChunk(
                 chunk=chunk,
                 embedding=[0.1, 0.2, 0.3],  # Simplified embedding
                 embedding_model="test-model",
@@ -148,7 +148,7 @@ class TestPipeline:
         mock_indexer.add_chunks.assert_called_once()
         chunks_indexed = mock_indexer.add_chunks.call_args[0][0]
         assert len(chunks_indexed) == 2
-        assert all(isinstance(chunk, PubMedEmbeddedChunk) for chunk in chunks_indexed)
+        assert all(isinstance(chunk, EmbeddedDocumentChunk) for chunk in chunks_indexed)
 
         # Verify results contain both chunks and embedded chunks
         assert "chunks" in result
@@ -157,8 +157,8 @@ class TestPipeline:
         assert len(result["embedded_chunks"]) == 2
 
         # Verify structure of returned objects
-        assert isinstance(result["chunks"][0], PubMedChunk)
-        assert isinstance(result["embedded_chunks"][0], PubMedEmbeddedChunk)
+        assert isinstance(result["chunks"][0], DocumentChunk)
+        assert isinstance(result["embedded_chunks"][0], EmbeddedDocumentChunk)
 
     def test_process_documents_chunk_only(
         self, mock_chunker, mock_embedder, mock_indexer, sample_pubmed_abstract
@@ -190,7 +190,7 @@ class TestPipeline:
         """Test processing multiple documents at once."""
         # Create sample abstracts
         abstracts = [
-            PubMedAbstract(
+            Document(
                 id=f"id{i}",
                 title=f"Title {i}",
                 text=f"Abstract text {i}",

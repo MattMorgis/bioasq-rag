@@ -3,13 +3,13 @@ from unittest.mock import MagicMock, patch
 import numpy as np
 import pytest
 from src.embedding.sentence_tranformer_embedder import SentenceTransformerEmbedder
-from src.models.pubmed import PubMedAbstract, PubMedChunk, PubMedEmbeddedChunk
+from src.models.pubmed import Document, DocumentChunk, EmbeddedDocumentChunk
 
 
 @pytest.fixture
 def sample_pubmed_abstract():
-    """Return a sample PubMedAbstract for testing."""
-    return PubMedAbstract(
+    """Return a sample Document for testing."""
+    return Document(
         id="123456",
         title="Sample Medical Abstract for Testing",
         text="This is a sample abstract about a medical topic.",
@@ -25,18 +25,18 @@ def sample_pubmed_abstract():
 
 @pytest.fixture
 def sample_pubmed_chunks(sample_pubmed_abstract):
-    """Return sample PubMedChunk objects for testing."""
-    chunk1 = PubMedChunk(
+    """Return sample DocumentChunk objects for testing."""
+    chunk1 = DocumentChunk(
         chunk_id=f"{sample_pubmed_abstract.id}-1",
         text="This is a sample abstract",
-        abstract=sample_pubmed_abstract,
+        document=sample_pubmed_abstract,
         metadata={"position": 1},
     )
 
-    chunk2 = PubMedChunk(
+    chunk2 = DocumentChunk(
         chunk_id=f"{sample_pubmed_abstract.id}-2",
         text="about a medical topic.",
-        abstract=sample_pubmed_abstract,
+        document=sample_pubmed_abstract,
         metadata={"position": 2},
     )
 
@@ -71,13 +71,13 @@ def test_embed_batch(mock_sentence_transformer, sample_pubmed_chunks):
     assert len(embedded_chunks) == 2
 
     # Check first embedded chunk
-    assert isinstance(embedded_chunks[0], PubMedEmbeddedChunk)
+    assert isinstance(embedded_chunks[0], EmbeddedDocumentChunk)
     assert embedded_chunks[0].chunk == sample_pubmed_chunks[0]
     assert np.array_equal(embedded_chunks[0].embedding, mock_embeddings[0])
     assert embedded_chunks[0].embedding_model == model_name
 
     # Check second embedded chunk
-    assert isinstance(embedded_chunks[1], PubMedEmbeddedChunk)
+    assert isinstance(embedded_chunks[1], EmbeddedDocumentChunk)
     assert embedded_chunks[1].chunk == sample_pubmed_chunks[1]
     assert np.array_equal(embedded_chunks[1].embedding, mock_embeddings[1])
     assert embedded_chunks[1].embedding_model == model_name

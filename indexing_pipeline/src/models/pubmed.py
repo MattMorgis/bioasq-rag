@@ -5,8 +5,8 @@ import numpy as np
 
 
 @dataclass
-class PubMedAbstract:
-    """Represents a PubMed abstract from the corpus."""
+class Document:
+    """Represents a document from the corpus."""
 
     id: str
     title: str
@@ -21,29 +21,29 @@ class PubMedAbstract:
 
 
 @dataclass
-class PubMedChunk:
-    """Represents a chunk of text from a PubMed abstract with full metadata preservation."""
+class DocumentChunk:
+    """Represents a chunk of text from a document with full metadata preservation."""
 
     # Chunk-specific content
     chunk_id: str
     text: str
 
-    # Reference to original abstract
-    abstract: PubMedAbstract
+    # Reference to original document
+    document: Document
 
     # Additional metadata specific to this chunk
     metadata: Dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
-class PubMedEmbeddedChunk:
+class EmbeddedDocumentChunk:
     """
-    Represents a PubMed chunk with an embedding vector representation.
+    Represents a document chunk with an embedding vector representation.
     Contains the original chunk object and its embedding information.
     """
 
     # The original chunk
-    chunk: PubMedChunk
+    chunk: DocumentChunk
 
     # Embedding information
     embedding: Union[List[float], np.ndarray]

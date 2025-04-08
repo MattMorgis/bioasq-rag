@@ -1,21 +1,21 @@
 from abc import ABC, abstractmethod
 from typing import List
 
-from src.models.pubmed import PubMedAbstract, PubMedChunk
+from src.models.pubmed import Document, DocumentChunk
 
 
 class AbstractChunker(ABC):
     """Interface for document chunking in the RAG pipeline."""
 
     @abstractmethod
-    def chunk_abstract(self, abstract: PubMedAbstract) -> List[PubMedChunk]:
+    def chunk_abstract(self, abstract: Document) -> List[DocumentChunk]:
         """
-        Process a PubMedAbstract and split it into chunks.
+        Process a Document and split it into chunks.
 
         Args:
-            abstract: A PubMedAbstract object containing the document text and metadata
+            abstract: A Document object containing the document text and metadata
 
         Returns:
-            A list of PubMedChunk objects with preserved metadata
+            A list of DocumentChunk objects with preserved metadata
         """
         pass

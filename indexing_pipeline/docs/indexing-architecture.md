@@ -1,7 +1,7 @@
 ```mermaid
 classDiagram
     %% Data Classes
-    class PubMedAbstract {
+    class Document {
         +id: str
         +title: str
         +text: str
@@ -14,28 +14,38 @@ classDiagram
         +doi: Optional[str]
     }
 
-    class PubMedChunk {
+    class DocumentChunk {
         +chunk_id: str
         +text: str
-        +abstract: PubMedAbstract
+        +document: Document
         +metadata: Dict
     }
 
-    class PubMedEmbeddedChunk {
-        +chunk: PubMedChunk
+    class EmbeddedDocumentChunk {
+        +chunk: DocumentChunk
         +embedding: Union[List[float], np.ndarray]
         +embedding_model: str
     }
 
     %% Interfaces
+    class Indexer {
+        <<interface>>
+        +initialize(index_name: str, dimension: int): None
+        +add_chunks(chunks: List[EmbeddedDocumentChunk]): None
+        +size: int
+        +delete(chunk_ids: List[str]): None
+        +is_ready(): bool
+    }
+
+    %% Interfaces
     class AbstractChunker {
         <<interface>>
-        +chunk_abstract(abstract: PubMedAbstract): List[PubMedChunk]
+        +chunk_document(document: Document): List[DocumentChunk]
     }
 
     class Embedder {
         <<interface>>
-        +embed_batch(chunks: List[PubMedChunk]): List[PubMedEmbeddedChunk]
+        +embed_batch(chunks: List[DocumentChunk]): List[EmbeddedDocumentChunk]
     }
 
     %% Implementations
@@ -43,14 +53,28 @@ classDiagram
         +chunk_size: int
         +chunk_overlap: int
         +splitter: DocumentSplitter
-        +chunk_abstract(abstract: PubMedAbstract): List[PubMedChunk]
+        +chunk_document(document: Document): List[DocumentChunk]
     }
 
     class SentenceTransformerEmbedder {
         +model: SentenceTransformer
         +batch_size: int
         +model_name: str
-        +embed_batch(chunks: List[PubMedChunk]): List[PubMedEmbeddedChunk]
+        +embed_batch(chunks: List[DocumentChunk]): List[EmbeddedDocumentChunk]
+    }
+
+    class QdrantIndexer {
+        +client: QdrantClient
+        +_index_name: str
+        +_dimension: int
+        +initialize(index_name: str, dimension: int): None
+        +add_chunks(chunks: List[EmbeddedDocumentChunk]): None
+        +size: int
+        +search(query_vector: Union[List[float], np.ndarray], limit: int): List[Dict]
+        +save(path: str): None
+        +load(path: str): None
+        +delete(chunk_ids: List[str]): None
+        +is_ready(): bool
     }
 
     %% Pipeline Components
@@ -58,32 +82,37 @@ classDiagram
         <<enumeration>>
         CHUNK
         EMBED
+        INDEX
     }
 
     class DataLoader {
         +corpus_path: Path
-        +load_abstracts_from_file(batch_size, limit): Generator[List[PubMedAbstract]]
+        +load_documents_from_file(batch_size, limit): Generator[List[Document]]
     }
 
     %% Pipeline
     class Pipeline {
         +chunker: AbstractChunker
         +embedder: Embedder
+        +indexer: Indexer
         +steps: Set[PipelineStep]
-        +process_documents(documents: List[PubMedAbstract]): Dict
+        +process_documents(documents: List[Document]): Dict
     }
 
     %% Inheritance
     AbstractChunker <|-- WordChunker
     Embedder <|-- SentenceTransformerEmbedder
+    Indexer <|-- QdrantIndexer
 
     %% Composition
     Pipeline o-- AbstractChunker
     Pipeline o-- Embedder
+    Pipeline o-- Indexer
     Pipeline o-- PipelineStep
 
     %% Relationships
-    PubMedAbstract ..> PubMedChunk : produces
-    PubMedChunk ..> PubMedEmbeddedChunk : produces
-    DataLoader ..> PubMedAbstract : loads
+    Document ..> DocumentChunk : produces
+    DocumentChunk ..> EmbeddedDocumentChunk : produces
+    EmbeddedDocumentChunk ..> Indexer : stores
+    DataLoader ..> Document : loads
 ```

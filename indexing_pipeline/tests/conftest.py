@@ -5,13 +5,13 @@ from pathlib import Path
 from typing import Generator
 
 import pytest
-from src.models.pubmed import PubMedAbstract
+from src.models.pubmed import Document
 
 
 @pytest.fixture
-def sample_pubmed_abstract() -> PubMedAbstract:
+def sample_pubmed_abstract() -> Document:
     """Return a sample PubMedAbstract for testing."""
-    return PubMedAbstract(
+    return Document(
         id="123456",
         title="Sample Medical Abstract for Testing",
         text="This is a sample abstract about a medical topic.",

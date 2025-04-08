@@ -1,11 +1,11 @@
 from abc import ABC, abstractmethod
 from typing import Any, List
 
-from src.models.pubmed import PubMedEmbeddedChunk
+from src.models.pubmed import EmbeddedDocumentChunk
 
 
 class Indexer(ABC):
-    """Abstract base class defining the interface for indexing PubMedEmbeddedChunks."""
+    """Abstract base class defining the interface for indexing embedded document chunks."""
 
     @abstractmethod
     def initialize(self, index_name: str, dimension: int, **kwargs: Any) -> None:
@@ -20,12 +20,12 @@ class Indexer(ABC):
         pass
 
     @abstractmethod
-    def add_chunks(self, chunks: List[PubMedEmbeddedChunk]) -> None:
+    def add_chunks(self, chunks: List[EmbeddedDocumentChunk]) -> None:
         """
-        Add a batch of PubMedEmbeddedChunks to the index.
+        Add a batch of embedded document chunks to the index.
 
         Args:
-            chunks: List of PubMedEmbeddedChunk objects to be indexed
+            chunks: List of EmbeddedDocumentChunk objects to be indexed
         """
         pass
 

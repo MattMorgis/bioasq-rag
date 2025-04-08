@@ -1,9 +1,9 @@
 from typing import List
 
-from haystack import Document
+from haystack import Document as HaystackDocument
 from haystack.components.preprocessors import DocumentSplitter
 from src.chunker.chunker import AbstractChunker
-from src.models.pubmed import PubMedAbstract, PubMedChunk
+from src.models.pubmed import Document, DocumentChunk
 
 
 class WordChunker(AbstractChunker):
@@ -18,20 +18,20 @@ class WordChunker(AbstractChunker):
         )
         self.splitter.warm_up()
 
-    def chunk_abstract(self, abstract: PubMedAbstract) -> List[PubMedChunk]:
-        doc = Document(content=abstract.text)
+    def chunk_abstract(self, abstract: Document) -> List[DocumentChunk]:
+        doc = HaystackDocument(content=abstract.text)
         result = self.splitter.run(documents=[doc])
         haystack_chunks = result["documents"]
 
-        pubmed_chunks = []
+        document_chunks = []
         for i, chunk in enumerate(haystack_chunks):
             chunk_id = f"{abstract.id}-{i + 1}"
-            pubmed_chunk = PubMedChunk(
+            document_chunk = DocumentChunk(
                 chunk_id=chunk_id,
                 text=chunk.content,
-                abstract=abstract,
+                document=abstract,
                 metadata=chunk.meta,
             )
-            pubmed_chunks.append(pubmed_chunk)
+            document_chunks.append(document_chunk)
 
-        return pubmed_chunks
+        return document_chunks

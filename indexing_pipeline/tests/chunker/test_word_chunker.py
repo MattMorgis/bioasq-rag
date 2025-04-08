@@ -1,12 +1,12 @@
 import pytest
 from src.chunker.word_chunker import WordChunker
-from src.models.pubmed import PubMedAbstract, PubMedChunk
+from src.models.pubmed import Document, DocumentChunk
 
 
 @pytest.fixture
 def sample_pubmed_abstract():
-    """Return a sample PubMedAbstract for testing."""
-    return PubMedAbstract(
+    """Return a sample Document for testing."""
+    return Document(
         id="123456",
         title="Sample Medical Abstract for Testing",
         text="This is a long sample abstract about a medical topic. It contains multiple sentences that should be chunked appropriately by the HaystackChunker. The chunker should split this text into manageable pieces while preserving the meaning and context of the content. This abstract discusses important biomedical information that would be relevant in a RAG system.",
@@ -69,22 +69,22 @@ def test_metadata_preservation(sample_pubmed_abstract):
 
     # Verify each chunk has the correct structure and preserved metadata
     for i, chunk in enumerate(chunks):
-        # Check chunk is a PubMedChunk
-        assert isinstance(chunk, PubMedChunk)
+        # Check chunk is a DocumentChunk
+        assert isinstance(chunk, DocumentChunk)
 
         # Check chunk ID format
         assert chunk.chunk_id == f"{sample_pubmed_abstract.id}-{i + 1}"
 
-        # Check metadata preservation through the abstract reference
-        assert chunk.abstract.title == sample_pubmed_abstract.title
-        assert chunk.abstract.id == sample_pubmed_abstract.id
-        assert chunk.abstract.url == sample_pubmed_abstract.url
-        assert chunk.abstract.journal == sample_pubmed_abstract.journal
+        # Check metadata preservation through the document reference
+        assert chunk.document.title == sample_pubmed_abstract.title
+        assert chunk.document.id == sample_pubmed_abstract.id
+        assert chunk.document.url == sample_pubmed_abstract.url
+        assert chunk.document.journal == sample_pubmed_abstract.journal
         assert (
-            chunk.abstract.publication_date == sample_pubmed_abstract.publication_date
+            chunk.document.publication_date == sample_pubmed_abstract.publication_date
         )
-        assert chunk.abstract.authors == sample_pubmed_abstract.authors
-        assert chunk.abstract.doi == sample_pubmed_abstract.doi
+        assert chunk.document.authors == sample_pubmed_abstract.authors
+        assert chunk.document.doi == sample_pubmed_abstract.doi
 
 
 def test_chunking_text_content(sample_pubmed_abstract):
@@ -113,7 +113,7 @@ def test_respect_sentence_boundary():
     """Test that the chunker respects sentence boundaries."""
     # Test text with clear sentence boundaries
     text = "This is sentence one. This is sentence two. This is sentence three."
-    abstract = PubMedAbstract(
+    abstract = Document(
         id="test123",
         title="Sentence Test",
         text=text,

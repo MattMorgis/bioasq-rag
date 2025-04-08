@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 from src.data_loader import DataLoader
-from src.models.pubmed import PubMedAbstract
+from src.models.pubmed import Document
 
 
 class TestDataLoader:
@@ -26,7 +26,7 @@ class TestDataLoader:
         abstracts = next(abstracts_gen)
 
         assert len(abstracts) == 5
-        assert all(isinstance(abstract, PubMedAbstract) for abstract in abstracts)
+        assert all(isinstance(abstract, Document) for abstract in abstracts)
 
         # Check the first abstract
         first_abstract = abstracts[0]

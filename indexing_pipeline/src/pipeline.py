@@ -4,7 +4,7 @@ from typing import Dict, List, Optional, Set, Union
 from src.chunker.chunker import AbstractChunker
 from src.embedding.embedder import Embedder
 from src.indexing.indexer import Indexer
-from src.models.pubmed import PubMedAbstract, PubMedChunk, PubMedEmbeddedChunk
+from src.models.pubmed import Document, DocumentChunk, EmbeddedDocumentChunk
 
 
 class PipelineStep(Enum):
@@ -17,7 +17,7 @@ class PipelineStep(Enum):
 
 class Pipeline:
     """
-    Flexible pipeline for processing PubMed abstracts.
+    Flexible pipeline for processing documents.
     Supports chunking, embedding, and indexing with configurable steps.
     """
 
@@ -70,13 +70,13 @@ class Pipeline:
                 raise ValueError("INDEX step requires CHUNK step to be enabled")
 
     def process_documents(
-        self, documents: List[PubMedAbstract]
-    ) -> Dict[str, Union[List[PubMedChunk], List[PubMedEmbeddedChunk]]]:
+        self, documents: List[Document]
+    ) -> Dict[str, Union[List[DocumentChunk], List[EmbeddedDocumentChunk]]]:
         """
         Process documents through the pipeline.
 
         Args:
-            documents: List of PubMedAbstract documents to process
+            documents: List of Document objects to process
 
         Returns:
             Dictionary with 'chunks' and/or 'embedded_chunks' keys depending on
@@ -86,10 +86,10 @@ class Pipeline:
         Raises:
             RuntimeError: If indexing is enabled but the indexer is not initialized
         """
-        result: Dict[str, Union[List[PubMedChunk], List[PubMedEmbeddedChunk]]] = {}
+        result: Dict[str, Union[List[DocumentChunk], List[EmbeddedDocumentChunk]]] = {}
 
         # Chunking step
-        chunks: List[PubMedChunk] = []
+        chunks: List[DocumentChunk] = []
         if PipelineStep.CHUNK in self.steps:
             print(f"Chunking {len(documents)} documents...")
             for doc in documents:
@@ -99,7 +99,7 @@ class Pipeline:
             print(f"Created {len(chunks)} chunks")
 
         # Embedding step
-        embedded_chunks: List[PubMedEmbeddedChunk] = []
+        embedded_chunks: List[EmbeddedDocumentChunk] = []
         if PipelineStep.EMBED in self.steps and chunks:
             print(f"Embedding {len(chunks)} chunks...")
             embedded_chunks = self.embedder.embed_batch(chunks)

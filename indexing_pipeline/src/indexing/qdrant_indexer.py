@@ -6,7 +6,7 @@ from qdrant_client import QdrantClient
 from qdrant_client.http import models as rest
 from qdrant_client.http.models import Distance, VectorParams
 from src.indexing.indexer import Indexer
-from src.models.pubmed import PubMedEmbeddedChunk
+from src.models.pubmed import EmbeddedDocumentChunk
 
 
 class QdrantIndexer(Indexer):
@@ -80,12 +80,12 @@ class QdrantIndexer(Indexer):
                 field_schema=rest.PayloadSchemaType.KEYWORD,
             )
 
-    def add_chunks(self, chunks: List[PubMedEmbeddedChunk]) -> None:
+    def add_chunks(self, chunks: List[EmbeddedDocumentChunk]) -> None:
         """
-        Add a batch of PubMedEmbeddedChunks to the index.
+        Add a batch of embedded document chunks to the index.
 
         Args:
-            chunks: List of PubMedEmbeddedChunk objects to be indexed
+            chunks: List of EmbeddedDocumentChunk objects to be indexed
         """
         if not self._index_name:
             raise ValueError("Index not initialized. Call initialize() first.")
@@ -102,21 +102,21 @@ class QdrantIndexer(Indexer):
             point_id = str(uuid.uuid4())
 
             # Prepare payload with metadata
-            abstract = chunk.chunk.abstract
+            document = chunk.chunk.document
             payload = {
                 # Chunk metadata
                 "chunk_id": chunk.chunk.chunk_id,  # Store original chunk_id in payload
                 "text": chunk.chunk.text,
-                # Abstract metadata
-                "abstract_id": abstract.id,
-                "title": abstract.title,
-                "url": abstract.url,
-                "publication_date": abstract.publication_date,
-                "journal": abstract.journal,
-                "authors": abstract.authors,
-                "keywords": abstract.keywords,
-                "mesh_terms": abstract.mesh_terms,
-                "doi": abstract.doi,
+                # Document metadata
+                "document_id": document.id,
+                "title": document.title,
+                "url": document.url,
+                "publication_date": document.publication_date,
+                "journal": document.journal,
+                "authors": document.authors,
+                "keywords": document.keywords,
+                "mesh_terms": document.mesh_terms,
+                "doi": document.doi,
                 # Embedding metadata
                 "embedding_model": chunk.embedding_model,
                 # Any additional chunk-specific metadata

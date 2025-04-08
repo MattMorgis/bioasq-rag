@@ -2,11 +2,11 @@ import json
 from pathlib import Path
 from typing import Generator, List, Optional, Union
 
-from src.models.pubmed import PubMedAbstract
+from src.models.pubmed import Document
 
 
 class DataLoader:
-    """Loads PubMed abstracts from corpus files or Hugging Face datasets."""
+    """Loads documents from corpus files or Hugging Face datasets."""
 
     def __init__(self, corpus_path: Optional[Union[str, Path]] = None):
         """
@@ -20,17 +20,17 @@ class DataLoader:
 
     def load_abstracts_from_file(
         self, batch_size: Optional[int] = None, limit: Optional[int] = None
-    ) -> Generator[List[PubMedAbstract], None, None]:
+    ) -> Generator[List[Document], None, None]:
         """
-        Load PubMed abstracts from a local JSONL file.
+        Load documents from a local JSONL file.
 
         Args:
-            batch_size: Number of abstracts to yield in each batch.
-                        If None, returns all abstracts in one batch.
-            limit: Maximum number of abstracts to load. If None, loads all abstracts.
+            batch_size: Number of documents to yield in each batch.
+                        If None, returns all documents in one batch.
+            limit: Maximum number of documents to load. If None, loads all documents.
 
         Yields:
-            Batches of PubMedAbstract objects.
+            Batches of Document objects.
         """
         if not self.corpus_path or not self.corpus_path.exists():
             raise FileNotFoundError(f"Corpus file not found at {self.corpus_path}")
@@ -44,7 +44,7 @@ class DataLoader:
                     break
 
                 data = json.loads(line)
-                abstract = PubMedAbstract(
+                abstract = Document(
                     id=data["id"],
                     title=data["title"],
                     text=data["text"],

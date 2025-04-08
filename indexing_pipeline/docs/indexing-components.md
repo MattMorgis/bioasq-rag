@@ -1,6 +1,6 @@
 ```mermaid
 graph TD
-    InputData[PubMed JSONL Corpus]
+    InputData[Document JSONL Corpus]
 
     subgraph ProcessingLayer["Processing Layer"]
         DataLoader[Data Loader]
@@ -12,11 +12,14 @@ graph TD
 
         AbstractChunkerInterface[AbstractChunker Interface]
         EmbedderInterface[Embedder Interface]
+        IndexerInterface[Indexer Interface]
 
-        PubMedAbstract[PubMedAbstract] --> AbstractChunkerInterface
-        AbstractChunkerInterface --> |"yields"| PubMedChunk[PubMedChunk]
-        PubMedChunk --> EmbedderInterface
-        EmbedderInterface --> |"yields"| PubMedEmbeddedChunk[PubMedEmbeddedChunk]
+        Document[Document] --> AbstractChunkerInterface
+        AbstractChunkerInterface --> |"yields"| DocumentChunk[DocumentChunk]
+        DocumentChunk --> EmbedderInterface
+        EmbedderInterface --> |"yields"| EmbeddedDocumentChunk[EmbeddedDocumentChunk]
+        EmbeddedDocumentChunk --> IndexerInterface
+        IndexerInterface --> |"stores"| VectorDB[Vector Database]
     end
 
     subgraph ChunkerImplementations["Chunker Implementations"]
@@ -29,9 +32,13 @@ graph TD
         EmbedderInterface --> SentenceTransformerEmbedder[SentenceTransformerEmbedder]
     end
 
+    subgraph IndexerImplementations["Indexer Implementations"]
+        direction TB
+        IndexerInterface --> QdrantIndexer[QdrantIndexer]
+    end
+
     subgraph OutputOptions["Output Options"]
         direction TB
-        VectorDB[Vector Database]
         FileSystem[File System Storage]
     end
 
@@ -44,11 +51,13 @@ graph TD
     %% Pipeline Configuration
     Pipeline -.-> |"configures"| AbstractChunkerInterface
     Pipeline -.-> |"configures"| EmbedderInterface
+    Pipeline -.-> |"configures"| IndexerInterface
 
     %% Pipeline Steps
     subgraph PipelineSteps["Pipeline Steps"]
         PipelineChunk[CHUNK]
         PipelineEmbed[EMBED]
+        PipelineIndex[INDEX]
     end
 
     Pipeline -.-> PipelineSteps
@@ -60,10 +69,10 @@ graph TD
     classDef data fill:#f3e5f5,stroke:#9c27b0
     classDef step fill:#ffebee,stroke:#f44336
 
-    class AbstractChunkerInterface,EmbedderInterface interface
-    class WordChunker,SentenceTransformerEmbedder implementation
+    class AbstractChunkerInterface,EmbedderInterface,IndexerInterface interface
+    class WordChunker,SentenceTransformerEmbedder,QdrantIndexer implementation
     class VectorDB,FileSystem storage
     class DataLoader,Pipeline process
-    class PubMedAbstract,PubMedChunk,PubMedEmbeddedChunk data
-    class PipelineChunk,PipelineEmbed step
+    class Document,DocumentChunk,EmbeddedDocumentChunk data
+    class PipelineChunk,PipelineEmbed,PipelineIndex step
 ```

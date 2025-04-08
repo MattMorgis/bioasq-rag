@@ -2,7 +2,7 @@ from typing import List
 
 from sentence_transformers import SentenceTransformer
 from src.embedding.embedder import Embedder
-from src.models.pubmed import PubMedChunk, PubMedEmbeddedChunk
+from src.models.pubmed import DocumentChunk, EmbeddedDocumentChunk
 
 
 class SentenceTransformerEmbedder(Embedder):
@@ -17,7 +17,7 @@ class SentenceTransformerEmbedder(Embedder):
         self.batch_size = batch_size
         self.model_name = model_name
 
-    def embed_batch(self, chunks: List[PubMedChunk]) -> List[PubMedEmbeddedChunk]:
+    def embed_batch(self, chunks: List[DocumentChunk]) -> List[EmbeddedDocumentChunk]:
         """Get embeddings for a batch of chunks."""
         # Extract text from each chunk
         texts = [chunk.text for chunk in chunks]
@@ -25,10 +25,10 @@ class SentenceTransformerEmbedder(Embedder):
         # Generate embeddings in batches
         embeddings = self.model.encode(texts, batch_size=self.batch_size)
 
-        # Create PubMedEmbeddedChunk objects
+        # Create EmbeddedDocumentChunk objects
         embedded_chunks = []
         for i, chunk in enumerate(chunks):
-            embedded_chunk = PubMedEmbeddedChunk(
+            embedded_chunk = EmbeddedDocumentChunk(
                 chunk=chunk, embedding=embeddings[i], embedding_model=self.model_name
             )
             embedded_chunks.append(embedded_chunk)

@@ -29,6 +29,7 @@
 - Refactored search module by moving models to src/models, routes to src/routes.py, and configuring Qdrant parameters as environment variables
 - Refactored search module to use a SearchClient interface with QdrantSearchClient implementation, improving code organization and testability
 - Added graceful error handling for Qdrant connection issues in QdrantSearchClient with custom QdrantConnectionError and 503 Service Unavailable responses
+- Refactored data models to use generic names (Document, DocumentChunk, EmbeddedDocumentChunk) instead of domain-specific ones (PubMedAbstract, PubMedChunk, PubMedEmbeddedChunk) to make the system more flexible and domain-agnostic
 
 # Project Updates
 
