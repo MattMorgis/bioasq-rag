@@ -20,11 +20,6 @@ collection_name = os.getenv("QDRANT_COLLECTION", "pubmed-all-MiniLM-L12-v2-200w-
 router = APIRouter()
 
 
-@router.get("/")
-def read_root():
-    return {"Hello": "World"}
-
-
 @router.get("/search/vector", response_model=SearchResponse)
 async def search(
     query: str = Query(..., description="The search query"),
