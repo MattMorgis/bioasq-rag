@@ -39,3 +39,23 @@ class Indexer(ABC):
             Number of indexed vectors
         """
         pass
+
+    @abstractmethod
+    def delete(self, chunk_ids: List[str]) -> None:
+        """
+        Remove vectors with the specified IDs from the index.
+
+        Args:
+            chunk_ids: List of chunk IDs to remove
+        """
+        pass
+
+    @abstractmethod
+    def is_ready(self) -> bool:
+        """
+        Check if the index is initialized and ready for use.
+
+        Returns:
+            True if the index is ready, False otherwise
+        """
+        pass
