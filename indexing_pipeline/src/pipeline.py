@@ -3,6 +3,7 @@ from typing import Dict, List, Optional, Set, Union
 
 from src.chunker.chunker import AbstractChunker
 from src.embedding.embedder import Embedder
+from src.indexing.indexer import Indexer
 from src.models.pubmed import PubMedAbstract, PubMedChunk, PubMedEmbeddedChunk
 
 
@@ -11,18 +12,20 @@ class PipelineStep(Enum):
 
     CHUNK = auto()
     EMBED = auto()
+    INDEX = auto()
 
 
 class Pipeline:
     """
     Flexible pipeline for processing PubMed abstracts.
-    Supports chunking and embedding with configurable steps.
+    Supports chunking, embedding, and indexing with configurable steps.
     """
 
     def __init__(
         self,
         chunker: AbstractChunker,
         embedder: Embedder,
+        indexer: Optional[Indexer] = None,
         steps: Optional[Set[PipelineStep]] = None,
     ):
         """
@@ -31,11 +34,20 @@ class Pipeline:
         Args:
             chunker: The chunker implementation to use
             embedder: The embedder implementation to use
+            indexer: Optional indexer implementation for storing embedded chunks
             steps: Set of steps to execute in the pipeline. If None, all steps will be executed.
+
+        Raises:
+            ValueError: If required components are missing for enabled steps or if steps are in invalid combination
         """
         self.chunker = chunker
         self.embedder = embedder
+        self.indexer = indexer
         self.steps = steps or {PipelineStep.CHUNK, PipelineStep.EMBED}
+
+        # Add INDEX step if indexer is provided and steps not explicitly set
+        if indexer and not steps:
+            self.steps.add(PipelineStep.INDEX)
 
         # Validate steps
         for step in self.steps:
@@ -43,6 +55,15 @@ class Pipeline:
                 raise ValueError("Chunker is required when CHUNK step is enabled")
             if step == PipelineStep.EMBED and not embedder:
                 raise ValueError("Embedder is required when EMBED step is enabled")
+            if step == PipelineStep.INDEX and not indexer:
+                raise ValueError("Indexer is required when INDEX step is enabled")
+
+        # Validate step combinations
+        if PipelineStep.INDEX in self.steps:
+            if PipelineStep.EMBED not in self.steps:
+                raise ValueError("INDEX step requires EMBED step to be enabled")
+            if PipelineStep.CHUNK not in self.steps:
+                raise ValueError("INDEX step requires CHUNK step to be enabled")
 
     def process_documents(
         self, documents: List[PubMedAbstract]
@@ -55,12 +76,16 @@ class Pipeline:
 
         Returns:
             Dictionary with 'chunks' and/or 'embedded_chunks' keys depending on
-            which steps were executed
+            which steps were executed. Note that indexed chunks are not returned
+            but are stored in the indexer.
+
+        Raises:
+            RuntimeError: If indexing is enabled but the indexer is not initialized
         """
-        result = {}
+        result: Dict[str, Union[List[PubMedChunk], List[PubMedEmbeddedChunk]]] = {}
 
         # Chunking step
-        chunks = []
+        chunks: List[PubMedChunk] = []
         if PipelineStep.CHUNK in self.steps:
             print(f"Chunking {len(documents)} documents...")
             for doc in documents:
@@ -70,10 +95,27 @@ class Pipeline:
             print(f"Created {len(chunks)} chunks")
 
         # Embedding step
+        embedded_chunks: List[PubMedEmbeddedChunk] = []
         if PipelineStep.EMBED in self.steps and chunks:
             print(f"Embedding {len(chunks)} chunks...")
             embedded_chunks = self.embedder.embed_batch(chunks)
             result["embedded_chunks"] = embedded_chunks
             print(f"Created {len(embedded_chunks)} embedded chunks")
+
+        # Indexing step
+        if PipelineStep.INDEX in self.steps and embedded_chunks:
+            # Since we validated in __init__ that indexer exists if INDEX step is enabled,
+            # we can safely assert it's not None here
+            assert self.indexer is not None, (
+                "Indexer cannot be None when INDEX step is enabled"
+            )
+
+            if not self.indexer.is_ready():
+                raise RuntimeError(
+                    "Indexer is not initialized. Call initialize() first."
+                )
+            print(f"Indexing {len(embedded_chunks)} embedded chunks...")
+            self.indexer.add_chunks(embedded_chunks)
+            print(f"Successfully indexed {len(embedded_chunks)} chunks")
 
         return result
