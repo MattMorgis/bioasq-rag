@@ -188,5 +188,9 @@ data/BioASQ-12b/goldset/*.json
 # Qdrant
 db/data/
 
+# DeepEval
+evaluations/.deepeval*
+evaluations/rag_evaluation.jsonl
+
 # Prompts
 rag-traditional/prompts/*.txt
