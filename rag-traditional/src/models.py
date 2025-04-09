@@ -7,8 +7,8 @@ class RAGRequest(BaseModel):
     """Request model for the RAG API endpoint."""
 
     query: str
-    max_results: Optional[int] = 5
-    temperature: Optional[float] = 0.7
+    max_results: Optional[int] = 10
+    temperature: Optional[float] = 0.2
     log_prompt: Optional[bool] = False
 
 
