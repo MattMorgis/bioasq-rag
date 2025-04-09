@@ -4,6 +4,10 @@ from fastapi.responses import StreamingResponse
 
 from .llm.openai_llm import OpenAILLM
 from .models import RAGRequest, RAGResponse
+from .prompt import (
+    create_rag_prompt,
+    get_rag_system_message,
+)
 from .search.vector_client import VectorSearchClient
 from .utils import clean_title, format_context_from_results
 
@@ -35,45 +39,9 @@ async def query_rag(request: RAGRequest) -> RAGResponse:
         # Step 2: Format search results as context for the LLM
         context = format_context_from_results(search_response.results)
 
-        # Step 3: Create a prompt for the LLM
-        prompt = f"""
-        ## Context (Retrieved Information):
-        {context}
-
-        ## Few Shot Examples:
-        Example 1:
-        User Query: Which receptor is inhibited by Teprotumumab?
-        Assistant Response: Teprotumumab is a monoclonal inhibitory antibody targeting IGF-1 receptor.
-
-        Example 2:
-        User Query: Does the protein mTOR regulate autophagy?
-        Assistant Response: mammalian target of rapamycin (mTOR)  is a major negative regulator of autophagy.
-
-        Example 3:
-        User Query: Which disease was studied in the CADISS trial?
-        Assistant Response: CADISS was a prospective multicentre randomised-controlled trial in acute (within 7 days of onset) carotid and vertebral artery dissection.
-
-        Example 4:
-        User Query: Is Daprodustat effective for anemia?
-        Assistant Response: Yes. Daprodustat is a hypoxia-inducible factor-prolyl hydroxylase inhibitor for the treatment of anemia of chronic kidney disease.
-
-        Instructions for use:
-        Answer the following biomedical question based on the provided research abstracts.
-        Your answer should be accurate, concise, and based solely on the information provided.
-        If the abstracts don't contain enough information to answer confidently, acknowledge the limitations.
-
-        QUESTION: {request.query}
-
-        """
-
-        system_message = """
-        You are a biomedical research assistant specialized in answering questions based on scientific literature.
-        Provide accurate, evidence-based answers citing the sources you used.
-        Only use information provided in the abstracts to form your answer.
-        When the retrieved information doesn't cover the query, acknowledge the limitations and respond with "I'm sorry, I don't have information about that topic."
-        IMPORTANT: Do not include source citations or references (like "Source 2" or "according to Document 3") in your responses. Integrate the information naturally as if you already know it. Your answers should be seamless and conversational.
-
-        """
+        # Step 3: Create a prompt for the LLM using the prompt module
+        prompt = create_rag_prompt(query=request.query, context=context)
+        system_message = get_rag_system_message()
 
         # Step 4: Generate an answer using the LLM
         llm = OpenAILLM()
@@ -129,42 +97,9 @@ async def query_rag_stream(request: RAGRequest):
         # Step 2: Format search results as context for the LLM
         context = format_context_from_results(search_response.results)
 
-        # Step 3: Create a prompt for the LLM
-        prompt = f"""
-        ## Context (Retrieved Information):
-        {context}
-
-        ## Few Shot Examples:
-        Example 1:
-        User Query: Which receptor is inhibited by Teprotumumab?
-        Assistant Response: Teprotumumab is a monoclonal inhibitory antibody targeting IGF-1 receptor.
-
-        Example 2:
-        User Query: Does the protein mTOR regulate autophagy?
-        Assistant Response: mammalian target of rapamycin (mTOR)  is a major negative regulator of autophagy.
-
-        Example 3:
-        User Query: Which disease was studied in the CADISS trial?
-        Assistant Response: CADISS was a prospective multicentre randomised-controlled trial in acute (within 7 days of onset) carotid and vertebral artery dissection.
-
-        Example 4:
-        User Query: Is Daprodustat effective for anemia?
-        Assistant Response: Yes. Daprodustat is a hypoxia-inducible factor-prolyl hydroxylase inhibitor for the treatment of anemia of chronic kidney disease.
-
-        Instructions for use:
-        Answer the following biomedical question based on the provided research abstracts.
-        Your answer should be accurate, concise, and based solely on the information provided.
-        If the abstracts don't contain enough information to answer confidently, acknowledge the limitations.
-
-        QUESTION: {request.query}
-        """
-
-        system_message = """
-        You are a biomedical research assistant specialized in answering questions based on scientific literature.
-        Provide accurate, evidence-based answers citing the sources you used.
-        Only use information provided in the abstracts to form your answer.
-        When the retrieved information doesn't cover the query, acknowledge the limitations and respond with "I'm sorry, I don't have information about that topic."
-        """
+        # Step 3: Create a prompt for the LLM using the prompt module
+        prompt = create_rag_prompt(query=request.query, context=context)
+        system_message = get_rag_system_message()
 
         # Step 4: Create the streaming generator function
         async def stream_generator():

@@ -31,3 +31,5 @@
 - Added graceful error handling for Qdrant connection issues in QdrantSearchClient with custom QdrantConnectionError and 503 Service Unavailable responses
 - Refactored data models to use generic names (Document, DocumentChunk, EmbeddedDocumentChunk) instead of domain-specific ones (PubMedAbstract, PubMedChunk, PubMedEmbeddedChunk) to make the system more flexible and domain-agnostic
 - Refactored vector search endpoint to use a dedicated use case pattern following separation of concerns
+- Refactored duplicated prompt code in routes.py into a dedicated prompt.py module
+- Simplified prompt module by removing redundant get_rag_stream_system_message function
