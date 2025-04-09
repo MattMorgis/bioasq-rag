@@ -1,3 +1,7 @@
+import os
+import uuid
+from datetime import datetime
+
 from dotenv import load_dotenv
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
@@ -14,7 +18,39 @@ from .utils import clean_title, format_context_from_results
 # Load environment variables
 load_dotenv()
 
+# Create prompts directory if it doesn't exist
+PROMPTS_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "prompts")
+os.makedirs(PROMPTS_DIR, exist_ok=True)
+
 router = APIRouter()
+
+
+def save_prompt_to_file(query: str, prompt: str, system_message: str) -> str:
+    """
+    Save the prompt and system message to a file.
+
+    Args:
+        query: The user's query
+        prompt: The formatted RAG prompt
+        system_message: The system message for the LLM
+
+    Returns:
+        Path to the saved prompt file
+    """
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    unique_id = str(uuid.uuid4())[:8]
+    filename = f"prompt_{timestamp}_{unique_id}.txt"
+    filepath = os.path.join(PROMPTS_DIR, filename)
+
+    with open(filepath, "w") as f:
+        f.write(f"TIMESTAMP: {datetime.now().isoformat()}\n")
+        f.write(f"QUERY: {query}\n\n")
+        f.write("SYSTEM MESSAGE:\n")
+        f.write(system_message)
+        f.write("\n\nPROMPT:\n")
+        f.write(prompt)
+
+    return filepath
 
 
 @router.post("/rag/query", response_model=RAGResponse)
@@ -42,6 +78,10 @@ async def query_rag(request: RAGRequest) -> RAGResponse:
         # Step 3: Create a prompt for the LLM using the prompt module
         prompt = create_rag_prompt(query=request.query, context=context)
         system_message = get_rag_system_message()
+
+        # Save prompt to file if logging is enabled
+        if hasattr(request, "log_prompt") and request.log_prompt:
+            save_prompt_to_file(request.query, prompt, system_message)
 
         # Step 4: Generate an answer using the LLM
         llm = OpenAILLM()
@@ -100,6 +140,10 @@ async def query_rag_stream(request: RAGRequest):
         # Step 3: Create a prompt for the LLM using the prompt module
         prompt = create_rag_prompt(query=request.query, context=context)
         system_message = get_rag_system_message()
+
+        # Save prompt to file if logging is enabled
+        if hasattr(request, "log_prompt") and request.log_prompt:
+            save_prompt_to_file(request.query, prompt, system_message)
 
         # Step 4: Create the streaming generator function
         async def stream_generator():

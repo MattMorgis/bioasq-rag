@@ -187,3 +187,6 @@ data/BioASQ-12b/goldset/*.json
 
 # Qdrant
 db/data/
+
+# Prompts
+rag-traditional/prompts/*.txt

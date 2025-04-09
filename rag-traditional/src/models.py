@@ -9,6 +9,7 @@ class RAGRequest(BaseModel):
     query: str
     max_results: Optional[int] = 5
     temperature: Optional[float] = 0.7
+    log_prompt: Optional[bool] = False
 
 
 class RAGResponse(BaseModel):

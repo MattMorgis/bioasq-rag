@@ -47,11 +47,13 @@ def mock_llm_response():
     return "Based on the provided abstract, the answer to the query is..."
 
 
+@patch("src.routes.save_prompt_to_file")
 @patch("src.routes.VectorSearchClient")
 @patch("src.routes.OpenAILLM")
 def test_rag_query_endpoint(
     mock_llm_class,
     mock_search_client_class,
+    mock_save_prompt,
     test_client,
     mock_search_response,
     mock_llm_response,
@@ -65,6 +67,8 @@ def test_rag_query_endpoint(
     mock_llm = AsyncMock()
     mock_llm.prompt.return_value = mock_llm_response
     mock_llm_class.return_value = mock_llm
+
+    mock_save_prompt.return_value = "mock/path/to/prompt.txt"
 
     # Test data
     test_request = {
@@ -95,12 +99,62 @@ def test_rag_query_endpoint(
     assert call_args["temperature"] == test_request["temperature"]
     assert test_request["query"] in call_args["prompt"]
 
+    # Verify save_prompt was not called (default log_prompt=False)
+    mock_save_prompt.assert_not_called()
 
+
+@patch("src.routes.save_prompt_to_file")
+@patch("src.routes.VectorSearchClient")
+@patch("src.routes.OpenAILLM")
+def test_rag_query_endpoint_with_prompt_logging(
+    mock_llm_class,
+    mock_search_client_class,
+    mock_save_prompt,
+    test_client,
+    mock_search_response,
+    mock_llm_response,
+):
+    """Test the RAG query endpoint with prompt logging enabled"""
+    # Setup mocks
+    mock_search_client = AsyncMock()
+    mock_search_client.search.return_value = mock_search_response
+    mock_search_client_class.return_value = mock_search_client
+
+    mock_llm = AsyncMock()
+    mock_llm.prompt.return_value = mock_llm_response
+    mock_llm_class.return_value = mock_llm
+
+    mock_save_prompt.return_value = "mock/path/to/prompt.txt"
+
+    # Test data with log_prompt enabled
+    test_request = {
+        "query": "What is the treatment for disease X?",
+        "max_results": 3,
+        "temperature": 0.5,
+        "log_prompt": True,
+    }
+
+    # Make request
+    response = test_client.post("/rag/query", json=test_request)
+
+    # Assertions
+    assert response.status_code == 200
+
+    # Verify save_prompt was called
+    mock_save_prompt.assert_called_once()
+    call_args = mock_save_prompt.call_args[0]
+    assert test_request["query"] == call_args[0]  # query
+    assert isinstance(call_args[1], str)  # prompt
+    assert isinstance(call_args[2], str)  # system_message
+
+
+@patch("src.routes.save_prompt_to_file")
 @patch("src.routes.VectorSearchClient")
 @patch("src.routes.OpenAILLM")
 def test_rag_query_stream_endpoint(
     mock_llm_class,
     mock_search_client_class,
+    mock_save_prompt,
     test_client,
     mock_search_response,
 ):
@@ -124,6 +178,8 @@ def test_rag_query_stream_endpoint(
     # Use the proper async generator
     mock_llm.prompt_stream = mock_stream_generator
     mock_llm_class.return_value = mock_llm
+
+    mock_save_prompt.return_value = "mock/path/to/prompt.txt"
 
     # Test data
     test_request = {
@@ -151,3 +207,61 @@ def test_rag_query_stream_endpoint(
     mock_search_client.search.assert_called_once_with(
         query=test_request["query"], limit=test_request["max_results"]
     )
+
+    # Verify save_prompt was not called (default log_prompt=False)
+    mock_save_prompt.assert_not_called()
+
+
+@patch("src.routes.save_prompt_to_file")
+@patch("src.routes.VectorSearchClient")
+@patch("src.routes.OpenAILLM")
+def test_rag_query_stream_endpoint_with_prompt_logging(
+    mock_llm_class,
+    mock_search_client_class,
+    mock_save_prompt,
+    test_client,
+    mock_search_response,
+):
+    """Test the streaming RAG query endpoint with prompt logging enabled"""
+    # Setup mocks
+    mock_search_client = AsyncMock()
+    mock_search_client.search.return_value = mock_search_response
+    mock_search_client_class.return_value = mock_search_client
+
+    # Setup streaming mock
+    mock_llm = AsyncMock()
+
+    # Create a proper async generator for testing that accepts the same parameters as prompt_stream
+    async def mock_stream_generator(
+        prompt, system_message=None, temperature=0.7, max_tokens=None
+    ):
+        chunks = ["This", " is", " a", " streaming", " response"]
+        for chunk in chunks:
+            yield chunk
+
+    # Use the proper async generator
+    mock_llm.prompt_stream = mock_stream_generator
+    mock_llm_class.return_value = mock_llm
+
+    mock_save_prompt.return_value = "mock/path/to/prompt.txt"
+
+    # Test data with log_prompt enabled
+    test_request = {
+        "query": "What is the treatment for disease X?",
+        "max_results": 3,
+        "temperature": 0.5,
+        "log_prompt": True,
+    }
+
+    # Make request
+    response = test_client.post("/rag/query/stream", json=test_request)
+
+    # Assertions
+    assert response.status_code == 200
+
+    # Verify save_prompt was called
+    mock_save_prompt.assert_called_once()
+    call_args = mock_save_prompt.call_args[0]
+    assert test_request["query"] == call_args[0]  # query
+    assert isinstance(call_args[1], str)  # prompt
+    assert isinstance(call_args[2], str)  # system_message

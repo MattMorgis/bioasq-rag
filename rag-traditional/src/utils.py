@@ -51,10 +51,6 @@ def format_context_from_results(results: List[SearchResult]) -> str:
 
     for i, result in enumerate(results, 1):
         source_info = f"Title: {clean_title(result.title)}"
-        if result.authors:
-            source_info += f"\nAuthors: {', '.join(result.authors)}"
-        if result.journal:
-            source_info += f"\nJournal: {result.journal}"
         if result.publication_date:
             source_info += f"\nDate: {result.publication_date}"
 
