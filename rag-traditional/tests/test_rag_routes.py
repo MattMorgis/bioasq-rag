@@ -5,9 +5,9 @@ from fastapi.testclient import TestClient
 from src.search.models import SearchResponse, SearchResult
 
 
-# Mock the main app for testing
 @pytest.fixture
 def test_client():
+    """Create a test client for the FastAPI app"""
     from fastapi import FastAPI
     from src.routes import router
 
@@ -17,21 +17,25 @@ def test_client():
 
 
 @pytest.fixture
-def mock_search_response():
-    """Create a mock search response with dummy data"""
+def mock_search_result():
+    """Create a mock search result"""
+    return SearchResult(
+        abstract_id="123456",
+        title="Test Title",
+        text="This is a test abstract about biomedical research.",
+        score=0.95,
+        url="https://pubmed.ncbi.nlm.nih.gov/123456/",
+        publication_date="2023-01-01",
+        journal="Test Journal",
+        authors=["Author One", "Author Two"],
+    )
+
+
+@pytest.fixture
+def mock_search_response(mock_search_result):
+    """Create a mock search response with one result"""
     return SearchResponse(
-        results=[
-            SearchResult(
-                abstract_id="123456",
-                title="Test Medical Paper",
-                text="This is a test abstract with medical information.",
-                score=0.95,
-                url="https://example.com/paper/123456",
-                publication_date="2023-01-01",
-                journal="Journal of Medical Tests",
-                authors=["Dr. Test", "Prof. Example"],
-            )
-        ],
+        results=[mock_search_result],
         query="test query",
         total_results=1,
     )
@@ -90,3 +94,60 @@ def test_rag_query_endpoint(
     call_args = mock_llm.prompt.call_args[1]
     assert call_args["temperature"] == test_request["temperature"]
     assert test_request["query"] in call_args["prompt"]
+
+
+@patch("src.routes.VectorSearchClient")
+@patch("src.routes.OpenAILLM")
+def test_rag_query_stream_endpoint(
+    mock_llm_class,
+    mock_search_client_class,
+    test_client,
+    mock_search_response,
+):
+    """Test the streaming RAG query endpoint with mocked dependencies"""
+    # Setup mocks
+    mock_search_client = AsyncMock()
+    mock_search_client.search.return_value = mock_search_response
+    mock_search_client_class.return_value = mock_search_client
+
+    # Setup streaming mock
+    mock_llm = AsyncMock()
+
+    # Create a proper async generator for testing that accepts the same parameters as prompt_stream
+    async def mock_stream_generator(
+        prompt, system_message=None, temperature=0.7, max_tokens=None
+    ):
+        chunks = ["This", " is", " a", " streaming", " response"]
+        for chunk in chunks:
+            yield chunk
+
+    # Use the proper async generator
+    mock_llm.prompt_stream = mock_stream_generator
+    mock_llm_class.return_value = mock_llm
+
+    # Test data
+    test_request = {
+        "query": "What is the treatment for disease X?",
+        "max_results": 3,
+        "temperature": 0.5,
+    }
+
+    # Make request
+    response = test_client.post("/rag/query/stream", json=test_request)
+
+    # Assertions
+    assert response.status_code == 200
+
+    # Parse the streaming response as plain text
+    content = response.content.decode()
+    assert "This is a streaming response" in content
+    assert "--- Sources ---" in content
+
+    # Check that the source information is included
+    assert "Test Title" in content
+    assert "(2023-01-01)" in content
+
+    # Verify mock calls
+    mock_search_client.search.assert_called_once_with(
+        query=test_request["query"], limit=test_request["max_results"]
+    )

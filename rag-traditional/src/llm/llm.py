@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Optional
+from typing import AsyncGenerator, Optional
 
 
 class LLM(ABC):
@@ -27,5 +27,27 @@ class LLM(ABC):
 
         Returns:
             The model's response as a string
+        """
+        pass
+
+    @abstractmethod
+    async def prompt_stream(
+        self,
+        prompt: str,
+        system_message: Optional[str] = None,
+        temperature: float = 0.7,
+        max_tokens: Optional[int] = None,
+    ) -> AsyncGenerator[str, None]:
+        """
+        Send a prompt to the language model and stream the response.
+
+        Args:
+            prompt: The user prompt to send to the model
+            system_message: Optional system message to set context
+            temperature: Controls randomness of output (0.0-1.0)
+            max_tokens: Maximum number of tokens to generate
+
+        Yields:
+            Chunks of the model's response as they are generated
         """
         pass
