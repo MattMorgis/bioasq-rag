@@ -1,14 +1,12 @@
 import json
 from pathlib import Path
+from time import sleep
 from typing import Any, Dict, List, Optional
 
 from deepeval import evaluate
 from deepeval.metrics import (
-    AnswerRelevancyMetric,
     ContextualPrecisionMetric,
     ContextualRecallMetric,
-    ContextualRelevancyMetric,
-    FaithfulnessMetric,
 )
 from deepeval.test_case import LLMTestCase
 from dotenv import load_dotenv
@@ -18,11 +16,11 @@ load_dotenv()
 # Create metrics with consistent model
 MODEL = "gpt-4o-mini"
 metrics = [
-    ("answer_relevancy", AnswerRelevancyMetric(model=MODEL)),
-    ("faithfulness", FaithfulnessMetric(model=MODEL)),
+    # ("answer_relevancy", AnswerRelevancyMetric(model=MODEL)),
+    # ("faithfulness", FaithfulnessMetric(model=MODEL)),
     ("contextual_precision", ContextualPrecisionMetric(model=MODEL)),
     ("contextual_recall", ContextualRecallMetric(model=MODEL)),
-    ("contextual_relevancy", ContextualRelevancyMetric(model=MODEL)),
+    # ("contextual_relevancy", ContextualRelevancyMetric(model=MODEL)),
 ]
 
 # Read and parse the rag_evaluation.jsonl file
@@ -58,7 +56,7 @@ all_results: Dict[str, Dict[str, Any]] = {"metrics": {}, "summary": {}}
 for metric_name, metric in metrics:
     print(f"\nEvaluating {metric_name}...")
     results = evaluate(
-        test_cases=test_cases[0:5],
+        test_cases=test_cases,
         metrics=[metric],
         hyperparameters=hyperparameters,
     )
@@ -133,6 +131,7 @@ for metric_name, metric in metrics:
     )
     print(f"{metric_name} Score: {score_str}")
     print(f"{metric_name} Success Rate: {success_rate_str}")
+    sleep(1)
 
 # Calculate overall summary across all metrics
 all_scores = [
@@ -159,7 +158,7 @@ all_results["summary"] = {
 }
 
 # Write results to file
-output_file = results_dir / "all_metrics_evaluation.json"
+output_file = results_dir / "search_metrics_evaluation.json"
 with open(output_file, "w") as f:
     json.dump(all_results, f, indent=2)
 
