@@ -7,11 +7,13 @@ dependencies = [
 ]
 
 [tool.uv.workspace]
-members = ["data_acquisition", "data_processing", "indexing_pipeline", "search"]
+members = ["data_acquisition", "data_processing", "indexing_pipeline", "search", "rag-traditional"]
 
 [dependency-groups]
 dev = [
+    "mypy>=1.15.0",
     "pytest>=8.3.5",
+    "pytest-asyncio>=0.26.0",
 ]
 
 

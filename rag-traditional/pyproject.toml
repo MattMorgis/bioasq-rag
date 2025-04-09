@@ -1,15 +1,13 @@
 [project]
-name = "search"
+name = "rag-traditional"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
-    "accelerate>=1.6.0",
+    "dotenv>=0.9.9",
     "fastapi[standard]>=0.115.12",
-    "pydantic>=2.11.2",
-    "qdrant-client>=1.7.0",
-    "sentence-transformers>=2.2.2",
+    "openai>=1.70.0",
 ]
 
 [tool.pytest.ini_options]
@@ -21,5 +19,3 @@ dev = [
     "httpx>=0.28.1",
     "pytest>=8.3.5",
 ]
-
-
