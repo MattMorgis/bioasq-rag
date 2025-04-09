@@ -1,7 +1,7 @@
 from enum import Enum, auto
 from typing import Dict, List, Optional, Set, Union
 
-from src.chunker.chunker import AbstractChunker
+from src.chunker.chunker import DocumentChunker
 from src.embedding.embedder import Embedder
 from src.indexing.indexer import Indexer
 from src.models.document import (
@@ -27,7 +27,7 @@ class Pipeline:
 
     def __init__(
         self,
-        chunker: AbstractChunker,
+        chunker: DocumentChunker,
         embedder: Embedder,
         indexer: Optional[Indexer] = None,
         steps: Optional[Set[PipelineStep]] = None,

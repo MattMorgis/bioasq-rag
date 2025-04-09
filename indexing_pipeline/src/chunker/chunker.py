@@ -4,7 +4,7 @@ from typing import List
 from src.models.document import Document, DocumentChunk
 
 
-class AbstractChunker(ABC):
+class DocumentChunker(ABC):
     """Interface for document chunking in the RAG pipeline."""
 
     @abstractmethod

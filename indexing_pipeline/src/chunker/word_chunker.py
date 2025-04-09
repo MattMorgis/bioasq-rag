@@ -2,11 +2,11 @@ from typing import List
 
 from haystack import Document as HaystackDocument
 from haystack.components.preprocessors import DocumentSplitter
-from src.chunker.chunker import AbstractChunker
+from src.chunker.chunker import DocumentChunker
 from src.models.document import Document, DocumentChunk
 
 
-class WordChunker(AbstractChunker):
+class WordChunker(DocumentChunker):
     def __init__(self, chunk_size: int = 200, chunk_overlap: int = 20):
         self.chunk_size = chunk_size
         self.chunk_overlap = chunk_overlap

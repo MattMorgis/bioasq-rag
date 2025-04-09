@@ -10,12 +10,12 @@ graph TD
     subgraph CorePipeline["Core Pipeline (Per Document)"]
         direction LR
 
-        AbstractChunkerInterface[AbstractChunker Interface]
+        DocumentChunkerInterface[DocumentChunker Interface]
         EmbedderInterface[Embedder Interface]
         IndexerInterface[Indexer Interface]
 
-        Document[Document] --> AbstractChunkerInterface
-        AbstractChunkerInterface --> |"yields"| DocumentChunk[DocumentChunk]
+        Document[Document] --> DocumentChunkerInterface
+        DocumentChunkerInterface --> |"yields"| DocumentChunk[DocumentChunk]
         DocumentChunk --> EmbedderInterface
         EmbedderInterface --> |"yields"| EmbeddedDocumentChunk[EmbeddedDocumentChunk]
         EmbeddedDocumentChunk --> IndexerInterface
@@ -24,7 +24,7 @@ graph TD
 
     subgraph ChunkerImplementations["Chunker Implementations"]
         direction TB
-        AbstractChunkerInterface --> WordChunker[WordChunker]
+        DocumentChunkerInterface --> WordChunker[WordChunker]
     end
 
     subgraph EmbedderImplementations["Embedder Implementations"]
@@ -37,19 +37,12 @@ graph TD
         IndexerInterface --> QdrantIndexer[QdrantIndexer]
     end
 
-    subgraph OutputOptions["Output Options"]
-        direction TB
-        FileSystem[File System Storage]
-    end
-
     InputData --> DataLoader
     DataLoader --> Pipeline
     Pipeline --> PubMedAbstract
 
-    PubMedEmbeddedChunk --> OutputOptions
-
     %% Pipeline Configuration
-    Pipeline -.-> |"configures"| AbstractChunkerInterface
+    Pipeline -.-> |"configures"| DocumentChunkerInterface
     Pipeline -.-> |"configures"| EmbedderInterface
     Pipeline -.-> |"configures"| IndexerInterface
 
@@ -69,7 +62,7 @@ graph TD
     classDef data fill:#f3e5f5,stroke:#9c27b0
     classDef step fill:#ffebee,stroke:#f44336
 
-    class AbstractChunkerInterface,EmbedderInterface,IndexerInterface interface
+    class DocumentChunkerInterface,EmbedderInterface,IndexerInterface interface
     class WordChunker,SentenceTransformerEmbedder,QdrantIndexer implementation
     class VectorDB,FileSystem storage
     class DataLoader,Pipeline process

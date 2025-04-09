@@ -1,7 +1,7 @@
 from unittest.mock import Mock
 
 import pytest
-from src.chunker.chunker import AbstractChunker
+from src.chunker.chunker import DocumentChunker
 from src.embedding.embedder import Embedder
 from src.indexing.indexer import Indexer
 from src.models.document import (
@@ -15,7 +15,7 @@ from src.pipeline import Pipeline, PipelineStep
 @pytest.fixture
 def mock_chunker():
     """Mock chunker implementation."""
-    chunker = Mock(spec=AbstractChunker)
+    chunker = Mock(spec=DocumentChunker)
 
     # Configure the mock to return predefined chunks
     def chunk_abstract(abstract):

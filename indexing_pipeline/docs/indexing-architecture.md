@@ -38,7 +38,7 @@ classDiagram
     }
 
     %% Interfaces
-    class AbstractChunker {
+    class DocumentChunker {
         <<interface>>
         +chunk_document(document: Document): List[DocumentChunk]
     }
@@ -92,7 +92,7 @@ classDiagram
 
     %% Pipeline
     class Pipeline {
-        +chunker: AbstractChunker
+        +chunker: DocumentChunker
         +embedder: Embedder
         +indexer: Indexer
         +steps: Set[PipelineStep]
@@ -100,12 +100,12 @@ classDiagram
     }
 
     %% Inheritance
-    AbstractChunker <|-- WordChunker
+    DocumentChunker <|-- WordChunker
     Embedder <|-- SentenceTransformerEmbedder
     Indexer <|-- QdrantIndexer
 
     %% Composition
-    Pipeline o-- AbstractChunker
+    Pipeline o-- DocumentChunker
     Pipeline o-- Embedder
     Pipeline o-- Indexer
     Pipeline o-- PipelineStep
