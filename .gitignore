@@ -190,8 +190,8 @@ db/data/
 
 # DeepEval
 evaluations/.deepeval*
-evaluations/rag_evaluation.jsonl
-evaluations/results/**/*.json
+#evaluations/rag_evaluation.jsonl
+#evaluations/results/**/*.json
 
 # Prompts
 rag-traditional/prompts/*.txt
