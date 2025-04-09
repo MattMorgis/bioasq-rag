@@ -1,6 +1,6 @@
 import pytest
 from src.chunker.word_chunker import WordChunker
-from src.models.pubmed import Document, DocumentChunk
+from src.models.document import Document, DocumentChunk
 
 
 @pytest.fixture

@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 from typing import Generator, List, Optional, Union
 
-from src.models.pubmed import Document
+from src.models.document import Document
 
 
 class DataLoader:

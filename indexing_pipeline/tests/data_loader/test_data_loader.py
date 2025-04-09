@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 from src.data_loader import DataLoader
-from src.models.pubmed import Document
+from src.models.document import Document
 
 
 class TestDataLoader:

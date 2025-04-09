@@ -6,7 +6,7 @@ from qdrant_client import QdrantClient
 from qdrant_client.http import models as rest
 from qdrant_client.http.models import Distance, VectorParams
 from src.indexing.indexer import Indexer
-from src.models.pubmed import EmbeddedDocumentChunk
+from src.models.document import EmbeddedDocumentChunk
 
 
 class QdrantIndexer(Indexer):

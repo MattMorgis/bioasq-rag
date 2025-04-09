@@ -3,7 +3,7 @@ from typing import List
 from haystack import Document as HaystackDocument
 from haystack.components.preprocessors import DocumentSplitter
 from src.chunker.chunker import AbstractChunker
-from src.models.pubmed import Document, DocumentChunk
+from src.models.document import Document, DocumentChunk
 
 
 class WordChunker(AbstractChunker):

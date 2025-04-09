@@ -4,7 +4,11 @@ from unittest.mock import MagicMock, patch
 
 import numpy as np
 from src.indexing.qdrant_indexer import QdrantIndexer
-from src.models.pubmed import Document, DocumentChunk, EmbeddedDocumentChunk
+from src.models.document import (
+    Document,
+    DocumentChunk,
+    EmbeddedDocumentChunk,
+)
 
 
 class TestQdrantIndexer(unittest.TestCase):

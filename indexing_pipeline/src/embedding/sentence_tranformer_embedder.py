@@ -2,7 +2,7 @@ from typing import List
 
 from sentence_transformers import SentenceTransformer
 from src.embedding.embedder import Embedder
-from src.models.pubmed import DocumentChunk, EmbeddedDocumentChunk
+from src.models.document import DocumentChunk, EmbeddedDocumentChunk
 
 
 class SentenceTransformerEmbedder(Embedder):

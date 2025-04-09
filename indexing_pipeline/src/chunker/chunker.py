@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import List
 
-from src.models.pubmed import Document, DocumentChunk
+from src.models.document import Document, DocumentChunk
 
 
 class AbstractChunker(ABC):

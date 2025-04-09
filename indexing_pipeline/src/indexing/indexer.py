@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Any, List
 
-from src.models.pubmed import EmbeddedDocumentChunk
+from src.models.document import EmbeddedDocumentChunk
 
 
 class Indexer(ABC):

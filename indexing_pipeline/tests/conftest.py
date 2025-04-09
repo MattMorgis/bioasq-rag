@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Generator
 
 import pytest
-from src.models.pubmed import Document
+from src.models.document import Document
 
 
 @pytest.fixture

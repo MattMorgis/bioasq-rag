@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import List
 
-from src.models.pubmed import DocumentChunk, EmbeddedDocumentChunk
+from src.models.document import DocumentChunk, EmbeddedDocumentChunk
 
 
 class Embedder(ABC):

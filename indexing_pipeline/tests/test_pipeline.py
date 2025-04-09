@@ -4,7 +4,11 @@ import pytest
 from src.chunker.chunker import AbstractChunker
 from src.embedding.embedder import Embedder
 from src.indexing.indexer import Indexer
-from src.models.pubmed import Document, DocumentChunk, EmbeddedDocumentChunk
+from src.models.document import (
+    Document,
+    DocumentChunk,
+    EmbeddedDocumentChunk,
+)
 from src.pipeline import Pipeline, PipelineStep
 
 

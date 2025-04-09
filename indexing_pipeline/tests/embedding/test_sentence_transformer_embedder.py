@@ -3,7 +3,11 @@ from unittest.mock import MagicMock, patch
 import numpy as np
 import pytest
 from src.embedding.sentence_tranformer_embedder import SentenceTransformerEmbedder
-from src.models.pubmed import Document, DocumentChunk, EmbeddedDocumentChunk
+from src.models.document import (
+    Document,
+    DocumentChunk,
+    EmbeddedDocumentChunk,
+)
 
 
 @pytest.fixture
