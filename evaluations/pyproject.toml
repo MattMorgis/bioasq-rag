@@ -1,7 +1,7 @@
 [project]
 name = "evaluations"
 version = "0.1.0"
-description = "Add your description here"
+description = "Evaluation metrics and testing framework for BioASQ RAG system performance"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [

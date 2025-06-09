@@ -1,7 +1,7 @@
 [project]
 name = "search"
 version = "0.1.0"
-description = "Add your description here"
+description = "Vector search API service for retrieving relevant biomedical documents"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
